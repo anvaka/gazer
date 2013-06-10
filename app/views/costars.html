@@ -1,0 +1,11 @@
+<div class="row">
+  <div class="span4">
+    <p>{{followersLog}}</p>
+    <p>{{favoriteLog}}</p>
+  </div>
+  <div class="span8">
+    <div data-ng-repeat="project in projects">
+      <a data-ng-href="https://github.com/{{project.name}}" target="_blank">{{project.name}}</a>: <b>{{project.count}}</b><br />
+    </div>
+  </div>
+</div>
