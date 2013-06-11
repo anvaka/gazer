@@ -1,11 +1,13 @@
 'use strict';
 
 angular.module('githubStarsApp')
-  .controller('CostarsCtrl', ['$scope', '$routeParams', 'githubClient', function ($scope, $routeParams, githubClient) {
+  .controller('CostarsCtrl', ['$scope', '$routeParams', 'githubClient', 'sortedOccurrenceCounter',
+              function ($scope, $routeParams, githubClient, SortedOccurrenceCounter) {
     $scope.log = [];
     var log = function (logName, msg) {
       $scope[logName] = msg;
     };
+    var counter = new SortedOccurrenceCounter();
 
     // if we know what to search, let's find it:
     var projectName = $routeParams.q;
@@ -13,26 +15,11 @@ angular.module('githubStarsApp')
     if (projectName) {
       var projectsOccurances = {};
       var updateHistogram = function (foundProjects) {
-        // todo: this could be done more efficiently with heap.
         for (var i = 0; i < foundProjects.length; ++i) {
           var projectName = foundProjects[i].full_name;
-          if (projectsOccurances.hasOwnProperty(projectName)) {
-            projectsOccurances[projectName] += 1;
-          } else {
-            projectsOccurances[projectName] = 1;
-          }
+          counter.add(projectName);
         }
-        var projects = Object.keys(projectsOccurances).sort(function(x, y) {
-          return projectsOccurances[y] - projectsOccurances[x];
-        });
-        var limitTo = [];
-        for (i = 0; i < 100; ++i) {
-          limitTo.push({
-            name : projects[i],
-            count: projectsOccurances[projects[i]]
-          });
-        }
-        $scope.projects = limitTo;
+        $scope.projects = counter.list(100);
       };
       var processStarredProjects = function (followers) {
         var processNextUser = function () {
@@ -41,6 +28,12 @@ angular.module('githubStarsApp')
             var usersProjectsCount = 0;
             log('favoriteLog', "Processing projects starred by " + userName);
             githubClient.getStarredProjects(userName).progress(function (progressReport){
+              if (progressReport.total && progressReport.total > 30) {
+                // This guy has starred more than 3k projects. Let's ignore him.
+                // Tell github client to stop the process
+                log('droppedUsers', 'Skipping ' + userName + '; Reason: Starred ~' + progressReport.total * progressReport.perPage + ' projects');
+                return true;
+              }
               usersProjectsCount += progressReport.data.length;
               updateHistogram(progressReport.data);
               log('favoriteLog', "Processing projects starred by " + userName + ' (' + usersProjectsCount + ')');

@@ -34,6 +34,14 @@ angular.module('githubStarsApp')
           var url = endpoint + '/' + handler + '?' + convertToQueryString(paramsKeyValue);
 
           return $http.jsonp(url).then(function (res) {
+            var status = res.data.meta && res.data.meta.status;
+            console.log(status);
+            if (status === 401) {
+              // sometimes this happens. Let's retry couple times.
+              debugger;
+              return makeRequest(handler, paramsKeyValue);
+            }
+
             var rateLimit = extractRateLimit(res);
             $rootScope.$broadcast('github:rateLimitChanged', rateLimit);
 
@@ -60,14 +68,17 @@ angular.module('githubStarsApp')
               var recordLink = record[0];
               var recordRel = record[1] && record[1].rel;
               if (recordRel === rel) {
-                  return recordLink.match(/\bpage=(\d+)/)[1];
+                  var count = recordLink.match(/\bpage=(\d+)/)[1];
+                  if (count) {
+                    return parseInt(count, 10);
+                  }
               }
             }
           };
 
           reportProgress = function(progress) {
             if (typeof pagesDownloaded.promise.reportProgress === 'function') {
-              pagesDownloaded.promise.reportProgress(progress);
+              return pagesDownloaded.promise.reportProgress(progress);
             }
           };
 
