@@ -15,12 +15,16 @@ angular.module('githubStarsApp')
     var analyzedProjectName = $routeParams.q;
     // todo: convert this to workflow.
     if (analyzedProjectName) {
-      var projectsOccurances = {};
       var updateHistogram = function (foundProjects) {
         for (var i = 0; i < foundProjects.length; ++i) {
           var projectName = foundProjects[i].full_name;
           if (analyzedProjectName !== projectName) {
-            counter.add(projectName, foundProjects[i]);
+            var projectData = foundProjects[i];
+            counter.add(projectName, {
+              watchers_count : projectData.watchers_count,
+              forks_count: projectData.forks_count,
+              description: projectData.description
+            });
           }
         }
         $scope.projects = counter.list(100);
@@ -32,11 +36,11 @@ angular.module('githubStarsApp')
             var userName = followers.pop().login;
             var usersProjectsCount = 0;
             log('favoriteLog', new UserFavoritesLogEntry({
-                  userName: userName,
-                  processedCount: usersProjectsCount,
-                  step: totalUsers - followers.length,
-                  totalSteps: totalUsers
-                }));
+                userName: userName,
+                processedCount: usersProjectsCount,
+                step: totalUsers - followers.length,
+                totalSteps: totalUsers
+              }));
 
             githubClient.getStarredProjects(userName).progress(function (progressReport){
               if (progressReport.total && progressReport.total > 30) {
@@ -53,14 +57,14 @@ angular.module('githubStarsApp')
                   step: totalUsers - followers.length,
                   totalSteps: totalUsers
                 }));
-            }).then(function (data) {
+            }).then(function () {
               processNextUser();
-            }, function (err) {
-              debugger;
+            }, function () {
+              // debugger;
             });
           } else {
             log('favoriteLog', null);
-            log('done', "Analysis complete.");
+            log('done', 'Analysis complete.');
           }
         };
         processNextUser();
@@ -71,7 +75,7 @@ angular.module('githubStarsApp')
           foundFollowers = foundFollowers.concat(progressReport.data);
           log('followersLog', 'Gathering ' + analyzedProjectName + ' followers: ' + foundFollowers.length);
         })
-        .then(function(res) {
+        .then(function() {
           log('followersLog', 'Found ' + foundFollowers.length + ' followers of ' + analyzedProjectName);
           processStarredProjects(foundFollowers);
         });

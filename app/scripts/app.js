@@ -1,6 +1,6 @@
 'use strict';
 angular.module('githubStarsApp', ['ui.bootstrap', 'ngCookies', 'githubStarsApp.directives'])
-  .config(['$routeProvider', '$locationProvider', function ($routeProvider, $locationProvider) {
+  .config(['$routeProvider', '$locationProvider', function ($routeProvider) {
     $routeProvider.when('/', {
         templateUrl: 'views/main.html',
         controller: 'MainCtrl'

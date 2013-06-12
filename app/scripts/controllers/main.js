@@ -1,5 +1,5 @@
 'use strict';
 
 angular.module('githubStarsApp')
-  .controller('MainCtrl', function ($scope) {
-  });
+  .controller('MainCtrl', function () {
+});

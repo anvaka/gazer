@@ -38,7 +38,7 @@ angular.module('githubStarsApp')
             console.log(status);
             if (status === 401) {
               // sometimes this happens. Let's retry couple times.
-              debugger;
+              // debugger;
               return makeRequest(handler, paramsKeyValue);
             }
 
@@ -68,10 +68,10 @@ angular.module('githubStarsApp')
               var recordLink = record[0];
               var recordRel = record[1] && record[1].rel;
               if (recordRel === rel) {
-                  var count = recordLink.match(/\bpage=(\d+)/)[1];
-                  if (count) {
-                    return parseInt(count, 10);
-                  }
+                var count = recordLink.match(/\bpage=(\d+)/)[1];
+                if (count) {
+                  return parseInt(count, 10);
+                }
               }
             }
           };
@@ -88,7 +88,7 @@ angular.module('githubStarsApp')
               pagesDownloaded.reject(data); // something goes wrong. Missing repository?
               return;
             }
-            var metaLink = res.meta && res.meta.Link
+            var metaLink = res.meta && res.meta.Link;
             var next = getRelPage(metaLink, 'next'),
                 total = getRelPage(metaLink, 'last');
             var stopNow = reportProgress({
@@ -127,5 +127,5 @@ angular.module('githubStarsApp')
       getStarredProjects: function (userName) {
         return getAllPages('users/' + userName + '/starred');
       }
-    }
+    };
   }]);

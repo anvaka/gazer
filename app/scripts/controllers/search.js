@@ -6,11 +6,11 @@
 angular.module('githubStarsApp')
   .controller('SearchCtrl', ['$scope', '$location', function ($scope, $location) {
     var availableSearches = [ {
-          name: "Co-Stars",
-          description: "Finds the most starred projects among stargazers of project X",
-          help: "Repo. E.g. anvaka/vivagraphjs",
-          route: "costars"
-        }];
+        name: 'Co-Stars',
+        description: 'Finds the most starred projects among stargazers of project X',
+        help: 'Repo. E.g. anvaka/vivagraphjs',
+        route: 'costars'
+      }];
     $scope.searchText = $location.search().q || '';
     $scope.searches = availableSearches;
     $scope.currentSearch = availableSearches[0];

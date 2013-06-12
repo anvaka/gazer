@@ -82,8 +82,8 @@ angular.module('githubStarsApp')
           }
         }
         return orderedList;
-      }
-    }
+      };
+    };
 
     return SortedOccurrenceCounter;
   });

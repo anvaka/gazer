@@ -1,10 +1,9 @@
 {
   "node": true,
   "browser": true,
-  "es5": true,
   "esnext": true,
   "bitwise": true,
-  "camelcase": true,
+  "camelcase": false,
   "curly": true,
   "eqeqeq": true,
   "immed": true,
@@ -19,7 +18,6 @@
   "strict": true,
   "trailing": true,
   "smarttabs": true,
-  "ambiguous_newline": false,
   "globals": {
     "angular": false
   }

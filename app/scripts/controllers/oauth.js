@@ -14,13 +14,13 @@ angular.module('githubStarsApp')
     if (codeMatch) {
       $http.jsonp(config.oauthArbiter + '&code=' + codeMatch[1] + '&callback=JSON_CALLBACK')
            .then(function(res){
-             var accessToken = res.data && res.data.access_token;
-             if (accessToken) {
-               $cookies.accessToken = accessToken;
-               // github sends code in the search argument, we need to remove
-               // it and navigate to default screen:
-               window.location.href = window.location.href.split('?')[0];
-             }
-           })
+              var accessToken = res.data && res.data.access_token;
+              if (accessToken) {
+                $cookies.accessToken = accessToken;
+                // github sends code in the search argument, we need to remove
+                // it and navigate to default screen:
+                window.location.href = window.location.href.split('?')[0];
+              }
+            });
     }
   }]);
