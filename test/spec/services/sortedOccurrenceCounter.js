@@ -26,7 +26,6 @@ describe('Service: sortedOccurrenceCounter', function () {
   });
 
   it('can count occurrences', function () {
-    alert('foo'); debugger;
     for(var i = 0; i < 100; ++i) {
       sortedOccurrenceCounter.add('foo100', 'bar100');
     }
