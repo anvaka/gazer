@@ -89,6 +89,19 @@ module.exports = function (grunt) {
       },
       server: '.tmp'
     },
+    html2js: {
+      dist: {
+        options: {
+          module: null, // no bundle module for all the html2js templates
+          base: '.'
+        },
+        files: [{
+          expand: true,
+          src: ['<%= yeoman.app %>/template/*.html'],
+          ext: '.html.js'
+        }]
+      }
+    },
     jshint: {
       options: {
         jshintrc: '.jshintrc'
@@ -130,7 +143,7 @@ module.exports = function (grunt) {
         cssDir: '.tmp/styles',
         imagesDir: '<%= yeoman.app %>/images',
         javascriptsDir: '<%= yeoman.app %>/scripts',
-        fontsDir: '<%= yeoman.app %>/styles/fonts',
+        fontsDir: '<%= yeoman.app %>/font',
         importPath: '<%= yeoman.app %>/components',
         relativeAssets: true
       },
@@ -253,7 +266,8 @@ module.exports = function (grunt) {
             '.htaccess',
             'components/**/*',
             'images/{,*/}*.{gif,webp}',
-            'styles/fonts/*'
+            'template/*.html',
+            'font/*'
           ]
         }]
       }
@@ -285,8 +299,9 @@ module.exports = function (grunt) {
     'jshint',
     'test',
     'coffee',
-    'compass:dist',
     'useminPrepare',
+    'html2js',
+    'compass:dist',
     'imagemin',
     'cssmin',
     'htmlmin',

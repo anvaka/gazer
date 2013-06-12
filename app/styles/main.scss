@@ -1,9 +1,6 @@
-@import "compass_twitter_bootstrap";
-.anonymous-rate-limit, .rate-limit {
-  padding-top: 9px;
-}
+$iconSpritePath: "../images/glyphicons-halflings.png";
+$iconWhiteSpritePath: "../images/glyphicons-halflings-white.png";
 
-.title-icon {
-  vertical-align: baseline;
-  margin-right: 4px;
-}
+@import 'sass-bootstrap/lib/bootstrap';
+@import 'co_stars';
+@import 'font_awesome';
