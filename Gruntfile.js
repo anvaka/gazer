@@ -11,7 +11,9 @@ module.exports = function (grunt) {
   // configurable paths
   var yeomanConfig = {
     app: 'app',
-    dist: 'dist'
+    dist: 'dist',
+    devoClientId: 'cd357f9f712e559cea9f',
+    prodClientId: '4c35b3efbdb468f631fb'
   };
 
   try {
@@ -21,14 +23,6 @@ module.exports = function (grunt) {
   grunt.initConfig({
     yeoman: yeomanConfig,
     watch: {
-      coffee: {
-        files: ['<%= yeoman.app %>/scripts/{,*/}*.coffee'],
-        tasks: ['coffee:dist']
-      },
-      coffeeTest: {
-        files: ['test/spec/{,*/}*.coffee'],
-        tasks: ['coffee:test']
-      },
       compass: {
         files: ['<%= yeoman.app %>/styles/{,*/}*.{scss,sass}'],
         tasks: ['compass']
@@ -117,26 +111,6 @@ module.exports = function (grunt) {
         singleRun: true
       }
     },
-    coffee: {
-      dist: {
-        files: [{
-          expand: true,
-          cwd: '<%= yeoman.app %>/scripts',
-          src: '{,*/}*.coffee',
-          dest: '.tmp/scripts',
-          ext: '.js'
-        }]
-      },
-      test: {
-        files: [{
-          expand: true,
-          cwd: 'test/spec',
-          src: '{,*/}*.coffee',
-          dest: '.tmp/spec',
-          ext: '.js'
-        }]
-      }
-    },
     compass: {
       options: {
         sassDir: '<%= yeoman.app %>/styles',
@@ -156,6 +130,15 @@ module.exports = function (grunt) {
     },
     concat: {
       dist: {
+        options: {
+          process: function (src, filepath) {
+            // make sure we return production client id before deploying
+            if (filepath.match(/config\.js$/)) {
+              return src.replace(yeomanConfig.devoClientId, yeomanConfig.prodClientId);
+            }
+            return src;
+          }
+        },
         files: {
           '<%= yeoman.dist %>/scripts/scripts.js': [
             '.tmp/scripts/{,*/}*.js',
@@ -278,7 +261,6 @@ module.exports = function (grunt) {
 
   grunt.registerTask('server', [
     'clean:server',
-    'coffee:dist',
     'compass:server',
     'livereload-start',
     'connect:livereload',
@@ -288,7 +270,6 @@ module.exports = function (grunt) {
 
   grunt.registerTask('test', [
     'clean:server',
-    'coffee',
     'compass',
     'connect:test',
     'karma'
@@ -298,14 +279,13 @@ module.exports = function (grunt) {
     'clean:dist',
     'jshint',
     'test',
-    'coffee',
     'useminPrepare',
     'html2js',
     'compass:dist',
     'imagemin',
     'cssmin',
     'htmlmin',
-    'concat',
+    'concat:dist',
     'copy',
     'cdnify',
     'ngmin',
