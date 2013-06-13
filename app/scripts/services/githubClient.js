@@ -5,7 +5,7 @@
  * http://developer.github.com/v3/
  */
 angular.module('githubStarsApp')
-  .factory('githubClient', ['$rootScope', '$http', '$cookies', '$q', function ($rootScope, $http, $cookies, $q) {
+  .factory('githubClient', ['$rootScope', '$http', '$cookies', 'progressingPromise', function ($rootScope, $http, $cookies, progressingPromise) {
     var endpoint = 'https://api.github.com',
         extractRateLimit = function (githubResponse) {
           var meta = githubResponse && githubResponse.data && githubResponse.data.meta;
@@ -25,6 +25,11 @@ angular.module('githubStarsApp')
           }
           return queryString.join('&');
         },
+
+        /**
+        * Makes single request to GitHub endpoint, extracts requests limit
+        * info, and checks response code.
+        */
         makeRequest = function (handler, paramsKeyValue) {
           paramsKeyValue = paramsKeyValue || {};
           paramsKeyValue.callback = 'JSON_CALLBACK';
@@ -33,13 +38,13 @@ angular.module('githubStarsApp')
           }
           var url = endpoint + '/' + handler + '?' + convertToQueryString(paramsKeyValue);
 
-          return $http.jsonp(url).then(function (res) {
+          var defferred = $http.jsonp(url).then(function (res) {
             var status = res.data.meta && res.data.meta.status;
-            console.log(status);
-            if (status === 401) {
-              // sometimes this happens. Let's retry couple times.
-              // debugger;
-              return makeRequest(handler, paramsKeyValue);
+            if (status !== 200) {
+              defferred.reject({
+                statusCode: status,
+                response: res
+              });
             }
 
             var rateLimit = extractRateLimit(res);
@@ -47,17 +52,17 @@ angular.module('githubStarsApp')
 
             return res.data;
           });
-        },
-        getAllPages = function (handler) {
-          var pagesDownloaded = $q.defer();
-          // very naive progress notification implementation.
-          pagesDownloaded.promise.progress = function (callback) {
-            pagesDownloaded.promise.reportProgress = callback;
-            return pagesDownloaded.promise;
-          };
 
+          return defferred;
+        },
+
+        /**
+        * Gets all pages from meta information of github request
+        */
+        getAllPages = function (handler) {
+          var download = progressingPromise.defer();
           // forward declaration of functional expressions
-          var onPageDownloaded, getOnePage, reportProgress;
+          var reportProgressAndDownloadNextPage, getOnePage;
 
           var getRelPage = function (metaLink, rel) {
             if (!metaLink) {
@@ -76,22 +81,16 @@ angular.module('githubStarsApp')
             }
           };
 
-          reportProgress = function(progress) {
-            if (typeof pagesDownloaded.promise.reportProgress === 'function') {
-              return pagesDownloaded.promise.reportProgress(progress);
-            }
-          };
-
-          onPageDownloaded = function(res) {
+          reportProgressAndDownloadNextPage = function(res) {
             var data = res && res.data;
             if (!angular.isArray(data)) {
-              pagesDownloaded.reject(data); // something goes wrong. Missing repository?
+              download.reject(data); // something goes wrong. Missing repository?
               return;
             }
             var metaLink = res.meta && res.meta.Link;
             var next = getRelPage(metaLink, 'next'),
                 total = getRelPage(metaLink, 'last');
-            var stopNow = reportProgress({
+            var stopNow = download.reportProgress({
               next: next,
               total: total,
               perPage: 100,
@@ -100,7 +99,7 @@ angular.module('githubStarsApp')
             if (!stopNow && next) {
               getOnePage(next);
             } else {
-              pagesDownloaded.resolve(res);
+              download.resolve(res);
             }
           };
 
@@ -108,13 +107,16 @@ angular.module('githubStarsApp')
             makeRequest(handler, {
                 per_page: 100,
                 page: pageNumber
-              }).then(onPageDownloaded);
+              }).then(reportProgressAndDownloadNextPage, function (err) {
+                // if something goes wrong here, lets reject the entier process
+                download.reject(err);
+              });
           };
 
           // kick of pages download
           getOnePage(1);
 
-          return pagesDownloaded.promise;
+          return download.promise;
         };
 
     return {
