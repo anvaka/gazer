@@ -11,14 +11,23 @@ angular.module('githubStarsApp')
     function UserFavoritesLogEntry(fields) {
       angular.extend(this, fields);
     }
+    var getRepoName = function (userInput) {
+      var repoMatch = userInput.match(/github.com\/([^/]+\/[^\/]+)/i) || // github.com/user/repo/...
+                      userInput.match(/([^/]+\/[^\/]+)/i);               // or just user/repo
+      if (repoMatch) {
+        return repoMatch[1];
+      }
+    };
     // if we know what to search, let's find it:
-    var analyzedProjectName = $routeParams.q;
+    var analyzedProjectName = getRepoName($routeParams.q);
+    var invariantProjectName = analyzedProjectName.toLowerCase();
+
     // todo: convert this to workflow.
     if (analyzedProjectName) {
       var updateHistogram = function (foundProjects) {
         for (var i = 0; i < foundProjects.length; ++i) {
           var projectName = foundProjects[i].full_name;
-          if (analyzedProjectName !== projectName) {
+          if (invariantProjectName !== projectName.toLowerCase()) {
             var projectData = foundProjects[i];
             counter.add(projectName, {
               watchers_count : projectData.watchers_count,
