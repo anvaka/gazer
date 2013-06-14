@@ -2,11 +2,9 @@
   <div class="span4">
     <h4><span class="title-icon icon-pencil"></span> Discovery log...</h4>
     <p class="muted">{{followersLog}}</p>
-    <p class="muted">{{droppedUsers}}</p>
-    <p data-ng-show="favoriteLog">
-    Step {{favoriteLog.step}} of {{favoriteLog.totalSteps}}. Analyzing <a data-ng-href="https://github.com/{{favoriteLog.userName}}" target="_blank">{{favoriteLog.userName}}</a> 
-    ({{favoriteLog.processedCount}});
-    </p>
+    <ul>
+      <li data-ng-repeat="record in userStatus">Processing {{record.name}}: {{record.processedCount}}</li>
+    </ul>
     <p class="text-success">{{done}}</p>
   </div>
   <div class="span8">

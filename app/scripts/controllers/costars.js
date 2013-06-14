@@ -8,9 +8,6 @@ angular.module('githubStarsApp')
       $scope[logName] = msg;
     };
     var counter = new SortedOccurrenceCounter();
-    function UserFavoritesLogEntry(fields) {
-      angular.extend(this, fields);
-    }
     var getRepoName = function (userInput) {
       var repoMatch = userInput.match(/github.com\/([^/]+\/[^\/]+)/i) || // github.com/user/repo/...
                       userInput.match(/([^/]+\/[^\/]+)/i);               // or just user/repo
@@ -25,7 +22,6 @@ angular.module('githubStarsApp')
       return;
     }
 
-    // todo: convert this to workflow.
     var updateHistogram = function (foundProjects) {
       for (var i = 0; i < foundProjects.length; ++i) {
         var projectName = foundProjects[i].full_name;
@@ -40,42 +36,63 @@ angular.module('githubStarsApp')
       }
       $scope.projects = counter.list(100);
     };
+    $scope.userStatus = {};
+    var updateUserAnalysisProgress = function (userName, processedCount, totalRecords) {
+      var record = $scope.userStatus[userName] || { name: userName};
+      record.processedCount = totalRecords ? (processedCount + '/' + totalRecords) : processedCount;
+      $scope.userStatus[userName] = record;
+    };
+    var removeUserAnalysisLogRecord = function (userName) {
+      delete $scope.userStatus[userName];
+    };
+    var updateOverallProgress = function (totalRecords, recordsAnalyzed) {
+      log('followersLog', 'Analyzed ' + recordsAnalyzed + ' out of ' + totalRecords + ' followers' );
+    };
     var processStarredProjects = function (followers) {
-      var bindUserProgressUpdate = function (userName) {
+      var createProgressUpdateHandler = function (userName) {
+        var processedCount = 0;
         return function (progressReport) {
           if (progressReport.totalPages && progressReport.totalPages > 12) {
-            // This guy has starred more than 3k projects. Let's ignore him.
-            // Tell github client to stop the process
-            log('droppedUsers', 'Skipping ' + userName + ': Starred ~' + progressReport.totalPages * progressReport.perPage + ' projects');
-            return true;
+            // This guy has starred more than 1200 projects. Let's ignore him.
+            // Tell github client to stop the process:
+            return true; // TODO: this is cryptic. Consider rejecting the promise?
           }
-          // usersProjectsCount += progressReport.data.length;
+          processedCount += progressReport.data.length;
+          updateUserAnalysisProgress(userName,
+                                     processedCount,
+                                     progressReport.totalPages * progressReport.perPage);
           updateHistogram(progressReport.data);
-          log('favoriteLog', new UserFavoritesLogEntry({
-              userName: userName,
-              processedCount: 0,
-              step: 0,
-              totalSteps: 0
-            }));
         };
       };
-      var shrinkObj = {
+      // we don't really need the entire hash of repo details to construct
+      // usage table:
+      var requiredRepoProperties = {
         full_name: true,
         watchers_count: true,
         forks_count: true,
         description: true
       };
+      var totalRecords = followers.length;
+      var usersAnalyzed = 0;
       promisingStream.process(followers, function (follower) {
-        return githubClient.getStarredProjects(follower.login, shrinkObj)
-                           .progress(bindUserProgressUpdate(follower.login))
+        var onGetStarredProjectProgressChanged = createProgressUpdateHandler(follower.login);
+
+        return githubClient.getStarredProjects(follower.login, requiredRepoProperties)
+                           .progress(onGetStarredProjectProgressChanged)
                            .then(function(data){
+                              // so, we have data on this user. Purge him from the log:
+                              removeUserAnalysisLogRecord(follower.login);
+                              updateOverallProgress(totalRecords, ++usersAnalyzed);
                               return data.length;
                             }, function(reason){
+                              // todo: notify on UI?
+                              removeUserAnalysisLogRecord(follower.login);
+                              updateOverallProgress(totalRecords, ++usersAnalyzed);
                               console.log(reason);
                             });
       }, 10).then(function(result){
         console.dir(result);
-        // done!
+        log('done', 'Done!');
       });
     };
     var foundFollowersCount = 0;
