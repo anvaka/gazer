@@ -16,7 +16,7 @@ angular.module('githubStarsApp')
         }
         return promise; // support chaining for progress
       };
-      // clients can use deferred to report their progress 
+      // clients can use deferred to report their progress
       // to subscribers. This calls pending listeners synchronously, which
       // is not a good design pattern. But I told you this is very naive implementation
       deferred.reportProgress = function () {
@@ -24,6 +24,7 @@ angular.module('githubStarsApp')
         // we want to iterate over all progress listeners, if one of them
         // returns true, meaning "Cancel the process", we want to notify ramining
         // listeners
+        // TODO: Maybe I should just reject the promis here?
         for(var i = 0; i < progressCallbacks.length; ++i) {
           shouldCancelCalculation = progressCallbacks[i].apply(null, arguments) ||
                                     shouldCancelCalculation;

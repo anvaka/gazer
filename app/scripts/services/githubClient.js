@@ -5,7 +5,7 @@
  * http://developer.github.com/v3/
  */
 angular.module('githubStarsApp')
-  .factory('githubClient', ['$rootScope', '$http', '$cookies', 'progressingPromise', function ($rootScope, $http, $cookies, progressingPromise) {
+  .factory('githubClient', ['$rootScope', '$http', '$cookies','$q', 'progressingPromise', function ($rootScope, $http, $cookies, $q, progressingPromise) {
     var endpoint = 'https://api.github.com',
         extractRateLimit = function (githubResponse) {
           var meta = githubResponse && githubResponse.data && githubResponse.data.meta;
@@ -38,10 +38,10 @@ angular.module('githubStarsApp')
           }
           var url = endpoint + '/' + handler + '?' + convertToQueryString(paramsKeyValue);
 
-          var defferred = $http.jsonp(url).then(function (res) {
+          return $http.jsonp(url).then(function (res) {
             var status = res.data.meta && res.data.meta.status;
             if (status !== 200) {
-              defferred.reject({
+              $q.reject({
                 statusCode: status,
                 response: res
               });
@@ -52,35 +52,45 @@ angular.module('githubStarsApp')
 
             return res.data;
           });
-
-          return defferred;
         },
 
+        shrinker = function(originalObj, requiredFields) {
+          if (requiredFields) {
+            var result = {};
+            for (var key in requiredFields) {
+              if (requiredFields.hasOwnProperty(key)) {
+                result[key] = originalObj[key];
+              }
+            }
+            return result;
+          }
+          return originalObj;
+        },
+        getRelPage = function (metaLink, rel) {
+          if (!metaLink) {
+            return; // nothing to do here.
+          }
+          for(var i = 0; i < metaLink.length; ++i) {
+            var record = metaLink[i];
+            var recordLink = record[0];
+            var recordRel = record[1] && record[1].rel;
+            if (recordRel === rel) {
+              var count = recordLink.match(/\bpage=(\d+)/)[1];
+              if (count) {
+                return parseInt(count, 10);
+              }
+            }
+          }
+        },
         /**
         * Gets all pages from meta information of github request
         */
-        getAllPages = function (handler) {
+        getAllPages = function (handler, shrinkPattern) {
           var download = progressingPromise.defer();
           // forward declaration of functional expressions
           var reportProgressAndDownloadNextPage, getOnePage;
 
-          var getRelPage = function (metaLink, rel) {
-            if (!metaLink) {
-              return; // nothing to do here.
-            }
-            for(var i = 0; i < metaLink.length; ++i) {
-              var record = metaLink[i];
-              var recordLink = record[0];
-              var recordRel = record[1] && record[1].rel;
-              if (recordRel === rel) {
-                var count = recordLink.match(/\bpage=(\d+)/)[1];
-                if (count) {
-                  return parseInt(count, 10);
-                }
-              }
-            }
-          };
-
+          var result = [];
           reportProgressAndDownloadNextPage = function(res) {
             var data = res && res.data;
             if (!angular.isArray(data)) {
@@ -90,16 +100,26 @@ angular.module('githubStarsApp')
             var metaLink = res.meta && res.meta.Link;
             var next = getRelPage(metaLink, 'next'),
                 total = getRelPage(metaLink, 'last');
+            var progressData = [];
+            var shrinkedObj;
+            for (var i = 0; i < res.data.length; ++i) {
+              shrinkedObj = shrinker(res.data[i], shrinkPattern);
+              progressData.push(shrinkedObj);
+              result.push(shrinkedObj);
+            }
+
             var stopNow = download.reportProgress({
-              next: next,
-              total: total,
+              nextPage: next,
+              totalPages: total,
               perPage: 100,
-              data: res.data
+              data: progressData
             });
-            if (!stopNow && next) {
+            if (stopNow) {
+              download.reject('Requested to stop');
+            } else if (next) {
               getOnePage(next);
             } else {
-              download.resolve(res);
+              download.resolve(result);
             }
           };
 
@@ -108,7 +128,7 @@ angular.module('githubStarsApp')
                 per_page: 100,
                 page: pageNumber
               }).then(reportProgressAndDownloadNextPage, function (err) {
-                // if something goes wrong here, lets reject the entier process
+                // if something goes wrong here, lets reject the entire process
                 download.reject(err);
               });
           };
@@ -123,11 +143,11 @@ angular.module('githubStarsApp')
       getUser: function () {
         return makeRequest('user').then(function (res) { return res.data; });
       },
-      getStargazers: function(repoName) {
-        return getAllPages('repos/' + repoName + '/stargazers');
+      getStargazers: function(repoName, shrinkPattern) {
+        return getAllPages('repos/' + repoName + '/stargazers', shrinkPattern);
       },
-      getStarredProjects: function (userName) {
-        return getAllPages('users/' + userName + '/starred');
+      getStarredProjects: function (userName, shrinkPattern) {
+        return getAllPages('users/' + userName + '/starred', shrinkPattern);
       }
     };
   }]);
