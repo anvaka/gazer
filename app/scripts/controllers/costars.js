@@ -74,7 +74,8 @@ angular.module('githubStarsApp')
       };
       var totalRecords = followers.length;
       var usersAnalyzed = 0;
-      promisingStream.process(followers, function (follower) {
+
+      var discoveryProcess = promisingStream.process(followers, function (follower) {
         var onGetStarredProjectProgressChanged = createProgressUpdateHandler(follower.login);
 
         return githubClient.getStarredProjects(follower.login, requiredRepoProperties)
@@ -90,12 +91,16 @@ angular.module('githubStarsApp')
                               updateOverallProgress(totalRecords, ++usersAnalyzed);
                               console.log(reason);
                             });
-      }, 10).then(function(result){
+      }, 10);
+      discoveryProcess.promise.then(function(result){
         console.dir(result);
         log('done', 'Done!');
       });
+      return discoveryProcess;
     };
+
     var foundFollowersCount = 0;
+    var discoveryProcess, scopeDestroyed;
     githubClient.getStargazers(analyzedProjectName, {
       login : true // we need only their login here...
     }).progress(function (progressReport) {
@@ -103,6 +108,15 @@ angular.module('githubStarsApp')
       log('followersLog', 'Gathering ' + analyzedProjectName + ' followers: ' + foundFollowersCount);
     }).then(function(foundFollowers) {
       log('followersLog', 'Found ' + foundFollowers.length + ' followers of ' + analyzedProjectName);
-      processStarredProjects(foundFollowers);
+      if (!scopeDestroyed) {
+        discoveryProcess = processStarredProjects(foundFollowers);
+      }
+    });
+
+    $scope.$on('$destroy', function () {
+      if (discoveryProcess) {
+        discoveryProcess.cancel();
+        scopeDestroyed = true;
+      }
     });
   }]);

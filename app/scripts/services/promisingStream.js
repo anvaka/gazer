@@ -13,7 +13,10 @@
 *     return promiseWhichCaclculatesImageOnWebWeorker(oneImage);
 *   },
 *   2                     // run only two concurrent (unresolved) promises at a time
-* ).then(allImagesProcessedCallback);
+* ).promise.then(allImagesProcessedCallback);
+*
+* yes, it returns not a promise.. maybe not a good idea, but I want to be able to
+* reject the entire process when user don't need. If there is a better way - let me know :)!
 **/
 angular.module('githubStarsApp')
 .factory('promisingStream', ['$q', function ($q) {
@@ -23,9 +26,10 @@ angular.module('githubStarsApp')
         successes = [],
         errors = [],
         lastScheduled = 0,
+        cancelRequested = false,
         scheduleNextPromise = function () {
           var i = lastScheduled;
-          if (i < objects.length) {
+          if (i < objects.length && !cancelRequested) {
             var promise = promiseFactory(objects[i]);
             promise.then(saveResult(successes, i), saveResult(errors, i));
             ++lastScheduled;
@@ -35,6 +39,9 @@ angular.module('githubStarsApp')
         saveResult = function (writeTo, i) {
           return function (result) {
             writeTo[i] = result;
+            if (cancelRequested) {
+              return $q.reject('Cancel requested');
+            }
             scheduleNextPromise();
             if (!(--activeCounter)) {
               deferred.resolve({
@@ -54,7 +61,12 @@ angular.module('githubStarsApp')
       deferred.resolve({results: successes, errors: errors});
     }
 
-    return deferred.promise;
+    return {
+      promise: deferred.promise,
+      cancel : function () {
+        cancelRequested = true;
+      }
+    };
   }
 
   return {
