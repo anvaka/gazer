@@ -1,11 +1,14 @@
 <div class="row-fluid">
   <div class="span4">
     <h4><span class="title-icon icon-pencil"></span> Discovery log...</h4>
-    <p class="muted">{{followersLog}}</p>
-    <ul>
+    <ul class="unstyled">
+      <li data-ng-repeat="(logName, message) in logEntries">
+        <span class="muted" data-ng-bind="message"></span>
+      </li>
+    </ul>
+    <ul class="unstyled">
       <li data-ng-repeat="record in userStatus">Processing {{record.name}}: {{record.processedCount}}</li>
     </ul>
-    <p class="text-success">{{done}}</p>
   </div>
   <div class="span8">
     <h4><span class="title-icon icon-star-half-empty"></span> Developers who starred this project also starred</h4>

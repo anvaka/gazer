@@ -3,9 +3,9 @@
 angular.module('githubStarsApp')
   .controller('CostarsCtrl', ['$scope', '$routeParams', 'promisingStream', 'githubClient', 'sortedOccurrenceCounter',
               function ($scope, $routeParams, promisingStream, githubClient, SortedOccurrenceCounter) {
-    $scope.log = [];
+    $scope.logEntries = {};
     var log = function (logName, msg) {
-      $scope[logName] = msg;
+      $scope.logEntries[logName] = msg;
     };
     var counter = new SortedOccurrenceCounter();
     var getRepoName = function (userInput) {
