@@ -8,7 +8,11 @@ angular.module('githubStarsApp')
       $scope.logEntries[logName] = msg;
     };
     var counter = new SortedOccurrenceCounter();
+    window.counter = counter;
     var getRepoName = function (userInput) {
+      // we are very forgiving here: allow whitespace, github.com
+      // take only user/repo part of the pattern
+      userInput = userInput.replace(/\s/g, '');
       var repoMatch = userInput.match(/github.com\/([^/]+\/[^\/]+)/i) || // github.com/user/repo/...
                       userInput.match(/([^/]+\/[^\/]+)/i);               // or just user/repo
       if (repoMatch) {
