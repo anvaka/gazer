@@ -23,6 +23,8 @@ angular.module('githubStarsApp')
     var SortedOccurrenceCounter = function () {
       var objectLookup = {};
       var layeredArrays = [[]];
+      this.__layers = layeredArrays;
+      this.__objectLookup = objectLookup;
       /**
       * Adds key to the list of counted objects. 
       * You can optinally associate value with a key. Later it can be
