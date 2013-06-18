@@ -5,7 +5,7 @@
  * http://developer.github.com/v3/
  */
 angular.module('githubStarsApp')
-  .factory('githubClient', ['$rootScope', '$http', '$cookies','$q', 'progressingPromise', function ($rootScope, $http, $cookies, $q, progressingPromise) {
+  .factory('githubClient', ['$rootScope', '$http', '$cookies','$q', 'progressingPromise', 'cacheService', '$timeout', function ($rootScope, $http, $cookies, $q, progressingPromise, cacheService, $timeout) {
     var endpoint = 'https://api.github.com',
         extractRateLimit = function (githubResponse) {
           var meta = githubResponse && githubResponse.data && githubResponse.data.meta;
@@ -144,10 +144,66 @@ angular.module('githubStarsApp')
         return makeRequest('user').then(function (res) { return res.data; });
       },
       getStargazers: function(repoName, shrinkPattern) {
-        return getAllPages('repos/' + repoName + '/stargazers', shrinkPattern);
+        var download = progressingPromise.defer();
+        var cacheMiss = function () {
+          getAllPages('repos/' + repoName + '/stargazers', shrinkPattern)
+            .progress(function (report) {
+              return download.reportProgress(report);
+            }).then(function (stargazers) {
+              cacheService.saveProjectFollowers(repoName, stargazers);
+              download.resolve(stargazers);
+              return stargazers;
+            }, function (err) {
+              download.reject(err);
+            });
+        };
+        var cacheHit = function (cache) {
+          download.reportProgress({
+            nextPage: 0,
+            totalPages: 0,
+            perPage: cache.followers.length,
+            data: cache.followers
+          });
+          $timeout(function () {
+            download.resolve(cache.followers);
+          });
+        };
+
+        cacheService.getProjectFollowers(repoName).then(cacheHit, cacheMiss);
+        return download.promise;
       },
+
       getStarredProjects: function (userName, shrinkPattern) {
-        return getAllPages('users/' + userName + '/starred', shrinkPattern);
+        var download = progressingPromise.defer();
+        // go to GitHub when the record is not found in the cache:
+        var cacheMiss = function () {
+          getAllPages('users/' + userName + '/starred', shrinkPattern)
+            .progress(function (report) {
+              return download.reportProgress(report);
+            }).then(function (starredProjects) {
+              cacheService.saveStarredProjects(userName, starredProjects);
+              download.resolve(starredProjects);
+              return starredProjects;
+            }, function (err) {
+              download.reject(err);
+            });
+        };
+        // otherwise pretend we are doing regular progress notification.
+        var cacheHit = function (starredProjects) {
+          download.reportProgress({
+            nextPage: 0,
+            totalPages: 0,
+            perPage: starredProjects.length,
+            data: starredProjects
+          });
+          $timeout(function () {
+            download.resolve(starredProjects);
+          });
+        };
+
+        cacheService.getStarredProjects(userName).then(cacheHit, cacheMiss);
+
+        return download.promise;
       }
     };
   }]);
