@@ -16,13 +16,12 @@ angular.module('githubStarsApp')
       var repoMatch = userInput.match(/github.com\/([^/]+\/[^\/]+)/i) || // github.com/user/repo/...
                       userInput.match(/([^/]+\/[^\/]+)/i);               // or just user/repo
       if (repoMatch) {
-        return repoMatch[1];
+        return repoMatch[1].toLowerCase();
       }
     };
     // if we know what to search, let's find it:
-    var analyzedProjectName = getRepoName($routeParams.q);
-    var invariantProjectName = analyzedProjectName.toLowerCase();
-    if (!analyzedProjectName) {
+    var invariantProjectName = getRepoName($routeParams.q);
+    if (!invariantProjectName) {
       return;
     }
 
@@ -85,7 +84,7 @@ angular.module('githubStarsApp')
         return githubClient.getStarredProjects(follower.login, requiredRepoProperties)
                            .progress(onGetStarredProjectProgressChanged)
                            .then(function(data){
-                              // so, we have data on this user. Purge him from the log:
+                              // so, we have data on this user. Remove him from the log:
                               removeUserAnalysisLogRecord(follower.login);
                               updateOverallProgress(totalRecords, ++usersAnalyzed);
                               return data.length;
@@ -103,15 +102,15 @@ angular.module('githubStarsApp')
       return discoveryProcess;
     };
 
-    var foundFollowersCount = 0;
     var discoveryProcess, scopeDestroyed;
-    githubClient.getStargazers(analyzedProjectName, {
-      login : true // we need only their login here...
+    var foundFollowersCount = 0;
+    githubClient.getStargazers(invariantProjectName, {
+      login : true // we need only their login name here...
     }).progress(function (progressReport) {
       foundFollowersCount += progressReport.data.length;
-      log('followersLog', 'Gathering ' + analyzedProjectName + ' followers: ' + foundFollowersCount);
+      log('followersLog', 'Gathering ' + invariantProjectName + ' followers: ' + foundFollowersCount);
     }).then(function(foundFollowers) {
-      log('followersLog', 'Found ' + foundFollowers.length + ' followers of ' + analyzedProjectName);
+      log('followersLog', 'Found ' + foundFollowers.length + ' followers of ' + invariantProjectName);
       if (!scopeDestroyed) {
         discoveryProcess = processStarredProjects(foundFollowers);
       }
