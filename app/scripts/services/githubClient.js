@@ -11,8 +11,8 @@ angular.module('githubStarsApp')
           var meta = githubResponse && githubResponse.data && githubResponse.data.meta;
           if (meta) {
             return {
-              limit: meta['X-RateLimit-Limit'] || 0,
-              remaining: meta['X-RateLimit-Remaining'] || 0
+              limit: parseInt(meta['X-RateLimit-Limit'], 10) || 0,
+              remaining: parseInt(meta['X-RateLimit-Remaining'], 10) || 0
             };
           }
         },
@@ -30,7 +30,7 @@ angular.module('githubStarsApp')
         * Makes single request to GitHub endpoint, extracts requests limit
         * info, and checks response code.
         */
-        makeRequest = function (handler, paramsKeyValue) {
+        makeRequest = function (handler, paramsKeyValue, waitTime) {
           paramsKeyValue = paramsKeyValue || {};
           paramsKeyValue.callback = 'JSON_CALLBACK';
           if ($cookies.accessToken) {
@@ -38,20 +38,38 @@ angular.module('githubStarsApp')
           }
           var url = endpoint + '/' + handler + '?' + convertToQueryString(paramsKeyValue);
 
-          return $http.jsonp(url).then(function (res) {
-            var status = res.data.meta && res.data.meta.status;
-            if (status !== 200 && status !== 403) { // 403 - rate limit, 200 - OK
-              $q.reject({
-                statusCode: status,
-                response: res
-              });
-            }
-
+          var dataReceived = $q.defer();
+          $http.jsonp(url).then(function (res) {
             var rateLimit = extractRateLimit(res);
             $rootScope.$broadcast('github:rateLimitChanged', rateLimit);
 
-            return res.data;
+            var status = res.data.meta && res.data.meta.status;
+            var rateLimitExceeded = (status === 403 && rateLimit.remaining === 0);
+            if (rateLimitExceeded) {
+              // If we have exceeded our rate limit, lets enter into polling mode
+              // before we can satisfy the promise. Polling interval starts from 10
+              // seconds and increases twice every time, but is capped by 30 minutes
+              waitTime = (waitTime || 5) * 2;
+              waitTime = Math.min(waitTime, 30 * 60);
+
+              var retryDefer = $q.defer();
+              $timeout(function (){
+                makeRequest(handler, paramsKeyValue, waitTime).then(function (result) {
+                  dataReceived.resolve(result);
+                }, function (reason) {
+                  dataReceived.reject(reason);
+                });
+              }, waitTime * 1000);
+            } else if (status === 200) {
+              dataReceived.resolve(res.data);
+            } else {
+              dataReceived.reject({
+                statusCode: status,
+                response: res.data
+              });
+            }
           });
+          return dataReceived.promise;
         },
 
         shrinker = function(originalObj, requiredFields) {

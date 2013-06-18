@@ -8,7 +8,7 @@ angular.module('githubStarsApp')
       $scope.logEntries[logName] = msg;
     };
     var counter = new SortedOccurrenceCounter();
-    window.counter = counter;
+    window.counter = counter; // this is for debugging/exploratory purposes
     var getRepoName = function (userInput) {
       // we are very forgiving here: allow whitespace, github.com
       // take only user/repo part of the pattern
