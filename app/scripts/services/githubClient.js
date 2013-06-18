@@ -40,7 +40,7 @@ angular.module('githubStarsApp')
 
           return $http.jsonp(url).then(function (res) {
             var status = res.data.meta && res.data.meta.status;
-            if (status !== 200) {
+            if (status !== 200 && status !== 403) { // 403 - rate limit, 200 - OK
               $q.reject({
                 statusCode: status,
                 response: res
@@ -144,7 +144,10 @@ angular.module('githubStarsApp')
         return makeRequest('user').then(function (res) { return res.data; });
       },
       getStargazers: function(repoName, shrinkPattern) {
+        // TODO: this function and getStarredProjects() below are very similar
+        // in their cache control flow. Consider refactoring this.
         var download = progressingPromise.defer();
+        // when we don't have a record for this repository - go to GitHub:
         var cacheMiss = function () {
           getAllPages('repos/' + repoName + '/stargazers', shrinkPattern)
             .progress(function (report) {

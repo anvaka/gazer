@@ -67,6 +67,7 @@ angular.module('githubStarsApp')
           updateHistogram(progressReport.data);
         };
       };
+
       // we don't really need the entire hash of repo details to construct
       // usage table:
       var requiredRepoProperties = {
