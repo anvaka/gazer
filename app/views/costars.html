@@ -2,9 +2,9 @@
   {{searchingLabel}}
 </div>
 <div data-ng-hide="searchingLabel">
-  <h2 data-ng-bind="repoTitle"></h2>
   <div class="row-fluid">
     <div class="span4">
+      <h2 data-ng-bind="repoTitle"></h2>
       <h4><span class="title-icon icon-pencil"></span> Analysis progress...</h4>
       <label class="checkbox" ng-show="cacheSupported">
         <input type="checkbox" ng-click="toggleCacheEnabled()" ng-model="cachingOptions.enabled"> Cache enabled 
@@ -20,12 +20,20 @@
     </div>
     <div class="span8">
       <h4><span class="title-icon icon-star-half-empty"></span> Developers who starred this project also starred</h4>
+      <div>
+        <ul class="inline">
+          <li>Sort by: </li>
+          <li><a class='sort-by' ng-class='classForSort("#")' ng-click='changeSort("#")'><span title="Sort in descending order of shared number of stars between two projects">Shared # of stars</span></a><li>
+          <li><a class='sort-by' ng-class='classForSort("%")' ng-click='changeSort("%")'><span title="Sort in descending order of shared percentage of likes between two projects: sharedStars/(projectAStars + projectBStars)">Shared % of stars</span></a><li>
+        </ul>
       <table class="table table-striped  table-condensed">
         <tbody>
           <tr class="row-fluid" data-ng-repeat="project in projects">
             <td>
               <div class="span9">
-                <a data-ng-href="https://github.com/{{project.key}}" target="_blank">{{project.key}}</a>: <b>{{project.count}}</b><br />
+                <a data-ng-href="https://github.com/{{project.key}}" target="_blank">{{project.key}}</a>: <b>x{{project.count}}</b>
+                <span ng-show='project.rate'>| {{project.rate | number}}%</span>
+                <br />
               </div>
               <small class="span3">
                 <i class="icon-star"></i><span data-ng-bind="project.value.watchers_count | number"></span>&nbsp;&nbsp;

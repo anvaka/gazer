@@ -36,7 +36,40 @@ angular.module('githubStarsApp')
     }
     $scope.searchingLabel = 'Searching for "' + invariantProjectName + '"';
 
-    // TODO: this needs to be refactored - it contains more logic than it should...
+    // TODO: this controller needs to be refactored - it contains more logic than it should...
+    var sortTypes = {
+      '#' : 'sharedNumberOfStars',
+      '%' : 'sharedPercentOfStars'
+    };
+    $scope.sortBy = sortTypes['#'];
+    $scope.classForSort = function (sortType) {
+      if ((sortType === '#' && $scope.sortBy === 'sharedNumberOfStars') ||
+          (sortType === '%' && $scope.sortBy === 'sharedPercentOfStars')){
+        return 'current';
+      }
+      return '';
+    };
+    $scope.changeSort = function (sortType) {
+      $scope.sortBy = sortTypes[sortType];
+      updateSort();
+    };
+    var ourStargazersCount = 0;
+    var updateSort = function () {
+      if ($scope.sortBy === 'sharedPercentOfStars') {
+        var projects = [];
+        // TODO: percent sort is too slow and is not optimized yet.
+        var sorted = counter.customSort(ourStargazersCount, function (their, our, shared) {
+          return Math.round(100 * 2 * shared/(their + our));
+        });
+        for (var i = 0; i < 100; ++i) {
+          projects.push(sorted[i]);
+        }
+        $scope.projects = projects;
+      } else {
+        // this is very fast. O(100).
+        $scope.projects = counter.list(100);
+      }
+    };
     var updateHistogram = function (foundProjects) {
       for (var i = 0; i < foundProjects.length; ++i) {
         var projectName = foundProjects[i].full_name;
@@ -49,7 +82,7 @@ angular.module('githubStarsApp')
           });
         }
       }
-      $scope.projects = counter.list(100);
+      updateSort();
     };
     $scope.userStatus = {};
     var updateUserAnalysisProgress = function (userName, processedCount, totalRecords) {
@@ -62,8 +95,11 @@ angular.module('githubStarsApp')
     };
     var updateOverallProgress = function (totalRecords, recordsAnalyzed) {
       log('followersLog', 'Analyzed ' + recordsAnalyzed + ' out of ' + totalRecords + ' followers' );
+      ourStargazersCount = recordsAnalyzed;
     };
     var processStarredProjects = function (followers) {
+      var totalRecords = followers.length;
+      var usersAnalyzed = 0;
       var createProgressUpdateHandler = function (userName) {
         var processedCount = 0;
         return function (progressReport) {
@@ -88,8 +124,6 @@ angular.module('githubStarsApp')
         forks_count: true,
         description: true
       };
-      var totalRecords = followers.length;
-      var usersAnalyzed = 0;
 
       var discoveryProcess = promisingStream.process(followers, function (follower) {
         var onGetStarredProjectProgressChanged = createProgressUpdateHandler(follower.login);

@@ -85,6 +85,22 @@ angular.module('githubStarsApp')
         }
         return orderedList;
       };
+      // this is not eficcient by any means.
+      // it should be (and will be) improved
+      this.customSort = function (ourStargazersCount, distanceCounter) {
+        var allKeys = Object.keys(objectLookup).map(function (repoName) {
+            var their = objectLookup[repoName];
+            var sharedStars = their.layerIdx;
+            var theirCount = their.value.watchers_count;
+            return {
+              rate: distanceCounter(theirCount, ourStargazersCount, sharedStars),
+              count: sharedStars,
+              key: repoName,
+              value: their.value,
+            };
+          });
+        return allKeys.sort(function(x, y) { return y.rate - x.rate; });
+      };
     };
 
     return SortedOccurrenceCounter;
