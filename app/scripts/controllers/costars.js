@@ -154,6 +154,7 @@ angular.module('githubStarsApp')
     githubClient.getStargazers(invariantProjectName, {
       login : true // we need only their login name here...
     }).progress(function (progressReport) {
+      $scope.searchingLabel = '';
       foundFollowersCount += progressReport.data.length;
       log('followersLog', 'Gathering ' + invariantProjectName + ' followers: ' + foundFollowersCount);
     }).then(function(foundFollowers) {
