@@ -52,7 +52,6 @@ angular.module('githubStarsApp')
               waitTime = (waitTime || 5) * 2;
               waitTime = Math.min(waitTime, 30 * 60);
 
-              var retryDefer = $q.defer();
               $timeout(function (){
                 makeRequest(handler, paramsKeyValue, waitTime).then(function (result) {
                   dataReceived.resolve(result);
@@ -68,6 +67,8 @@ angular.module('githubStarsApp')
                 response: res.data
               });
             }
+          }, function(reason) {
+            dataReceived.reject(reason);
           });
           return dataReceived.promise;
         },
