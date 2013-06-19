@@ -38,7 +38,8 @@ angular.module('githubStarsApp')
           starred: repositories.map(function (r) { return r.full_name; })
         });
       });
-    }
+    },
+    isSupported: dbProvider.isSupported()
   };
 }]);
 

@@ -12,6 +12,7 @@ angular.module('githubStarsApp')
     var getRepoName = function (userInput) {
       // we are very forgiving here: allow whitespace, github.com
       // take only user/repo part of the pattern
+      userInput = userInput || '';
       userInput = userInput.replace(/\s/g, '');
       var repoMatch = userInput.match(/github.com\/([^/]+\/[^\/]+)/i) || // github.com/user/repo/...
                       userInput.match(/([^/]+\/[^\/]+)/i);               // or just user/repo
@@ -19,12 +20,23 @@ angular.module('githubStarsApp')
         return repoMatch[1].toLowerCase();
       }
     };
+    $scope.searchingLabel = 'Type in repository name to start analysis ↑';
+
+    $scope.cacheSupported = githubClient.cacheSupported();
+    $scope.cachingOptions = {
+      enabled: githubClient.cacheEnabled()
+    };
+    $scope.toggleCacheEnabled = function () {
+      githubClient.setCaching($scope.cachingOptions.enabled);
+    };
     // if we know what to search, let's find it:
     var invariantProjectName = getRepoName($routeParams.q);
     if (!invariantProjectName) {
       return;
     }
+    $scope.searchingLabel = 'Searching for "' + invariantProjectName + '"';
 
+    // TODO: this needs to be refactored - it contains more logic than it should...
     var updateHistogram = function (foundProjects) {
       for (var i = 0; i < foundProjects.length; ++i) {
         var projectName = foundProjects[i].full_name;
@@ -111,10 +123,14 @@ angular.module('githubStarsApp')
       foundFollowersCount += progressReport.data.length;
       log('followersLog', 'Gathering ' + invariantProjectName + ' followers: ' + foundFollowersCount);
     }).then(function(foundFollowers) {
+      $scope.searchingLabel = '';
+      $scope.repoTitle = invariantProjectName;
       log('followersLog', 'Found ' + foundFollowers.length + ' followers of ' + invariantProjectName);
       if (!scopeDestroyed) {
         discoveryProcess = processStarredProjects(foundFollowers);
       }
+    }, function () {
+      $scope.searchingLabel = 'Sorry, I couldn\'t find this reposiotry on GitHub.com. Make sure it exists.';
     });
 
     $scope.$on('$destroy', function () {

@@ -1,32 +1,41 @@
-<div class="row-fluid">
-  <div class="span4">
-    <h4><span class="title-icon icon-pencil"></span> Discovery log...</h4>
-    <ul class="unstyled">
-      <li data-ng-repeat="(logName, message) in logEntries">
-        <span class="muted" data-ng-bind="message"></span>
-      </li>
-    </ul>
-    <ul class="unstyled">
-      <li data-ng-repeat="record in userStatus">Processing {{record.name}}: {{record.processedCount}}</li>
-    </ul>
-  </div>
-  <div class="span8">
-    <h4><span class="title-icon icon-star-half-empty"></span> Developers who starred this project also starred</h4>
-    <table class="table table-striped  table-condensed">
-      <tbody>
-        <tr class="row-fluid" data-ng-repeat="project in projects">
-          <td>
-            <div class="span9">
-              <a data-ng-href="https://github.com/{{project.key}}" target="_blank">{{project.key}}</a>: <b>{{project.count}}</b><br />
-            </div>
-            <small class="span3">
-              <i class="icon-star"></i><span data-ng-bind="project.value.watchers_count | number"></span>&nbsp;&nbsp;
-              <i class="icon-code-fork"></i><span data-ng-bind="project.value.forks_count | number"></span>
-            </small>
-            <p data-ng-bind="project.value.description"></p>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+<div data-ng-show="searchingLabel">
+  {{searchingLabel}}
+</div>
+<div data-ng-hide="searchingLabel">
+  <h2 data-ng-bind="repoTitle"></h2>
+  <div class="row-fluid">
+    <div class="span4">
+      <h4><span class="title-icon icon-pencil"></span> Analysis progress...</h4>
+      <label class="checkbox" ng-show="cacheSupported">
+        <input type="checkbox" ng-click="toggleCacheEnabled()" ng-model="cachingOptions.enabled"> Cache enabled 
+      </label>
+      <ul class="unstyled">
+        <li data-ng-repeat="(logName, message) in logEntries">
+          <span class="muted" data-ng-bind="message"></span>
+        </li>
+      </ul>
+      <ul class="unstyled">
+        <li data-ng-repeat="record in userStatus">Processing {{record.name}}: {{record.processedCount}}</li>
+      </ul>
+    </div>
+    <div class="span8">
+      <h4><span class="title-icon icon-star-half-empty"></span> Developers who starred this project also starred</h4>
+      <table class="table table-striped  table-condensed">
+        <tbody>
+          <tr class="row-fluid" data-ng-repeat="project in projects">
+            <td>
+              <div class="span9">
+                <a data-ng-href="https://github.com/{{project.key}}" target="_blank">{{project.key}}</a>: <b>{{project.count}}</b><br />
+              </div>
+              <small class="span3">
+                <i class="icon-star"></i><span data-ng-bind="project.value.watchers_count | number"></span>&nbsp;&nbsp;
+                <i class="icon-code-fork"></i><span data-ng-bind="project.value.forks_count | number"></span>
+              </small>
+              <p data-ng-bind="project.value.description"></p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

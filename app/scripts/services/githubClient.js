@@ -7,6 +7,7 @@
 angular.module('githubStarsApp')
   .factory('githubClient', ['$rootScope', '$http', '$cookies','$q', 'progressingPromise', 'cacheService', '$timeout', function ($rootScope, $http, $cookies, $q, progressingPromise, cacheService, $timeout) {
     var endpoint = 'https://api.github.com',
+        isCaching = cacheService.isSupported && ($cookies.cacheEnabled === 'false' ? false : true),
         extractRateLimit = function (githubResponse) {
           var meta = githubResponse && githubResponse.data && githubResponse.data.meta;
           if (meta) {
@@ -191,7 +192,11 @@ angular.module('githubStarsApp')
           });
         };
 
-        cacheService.getProjectFollowers(repoName).then(cacheHit, cacheMiss);
+        if (isCaching) {
+          cacheService.getProjectFollowers(repoName).then(cacheHit, cacheMiss);
+        } else {
+          cacheMiss();
+        }
         return download.promise;
       },
 
@@ -223,9 +228,25 @@ angular.module('githubStarsApp')
           });
         };
 
-        cacheService.getStarredProjects(userName).then(cacheHit, cacheMiss);
+        if (isCaching) {
+          cacheService.getStarredProjects(userName).then(cacheHit, cacheMiss);
+        } else {
+          // assume it's a miss:
+          cacheMiss();
+        }
 
         return download.promise;
+      },
+
+      cacheEnabled: function () {
+        return isCaching;
+      },
+      cacheSupported: function () {
+        return cacheService.isSupported;
+      },
+      setCaching: function (enabled) {
+        $cookies.cacheEnabled = enabled.toString();
+        isCaching = enabled;
       }
     };
   }]);
