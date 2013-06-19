@@ -96,7 +96,7 @@ angular.module('githubStarsApp')
               rate: distanceCounter(theirCount, ourStargazersCount, sharedStars),
               count: sharedStars,
               key: repoName,
-              value: their.value,
+              value: their.value
             };
           });
         return allKeys.sort(function(x, y) { return y.rate - x.rate; });
