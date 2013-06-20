@@ -5,21 +5,23 @@
   <div class="row-fluid">
     <div class="span4">
       <h2 data-ng-bind="repoTitle"></h2>
-      <h4><span class="title-icon icon-cogs"></span> Settings</h2>
-      <form class="form-inline">
-      <label class="checkbox" ng-show="settings.cacheSupported">
-        <input type="checkbox" ng-click="toggleCacheEnabled()" ng-model="settings.cacheEnabled"> Cache enabled 
-      </label><br />
-      <label class="checkbox">
-        <input type="checkbox" ng-click="toggleStarsCapEnabled()" ng-model="settings.starsCapEnabled">
-        <span>Limit # of stars to analyze</span>
-      </label>
-      <span class="checkbox" ng-show="settings.starsCapEnabled">
-        to
-      <input class="input-mini numericInput text-center" ng-model="settings.starsCap" type="text" placeholder="500">
-      (makes analysis faster)
-      </span>
-      </form>
+      <h4><span class="title-icon icon-cogs"></span> Settings</h4>
+      <div>
+        <form class="form-inline">
+          <label class="checkbox" ng-show="settings.cacheSupported">
+            <input type="checkbox" ng-click="toggleCacheEnabled()" ng-model="settings.cacheEnabled"> Cache enabled 
+          </label><br />
+          <label class="checkbox">
+            <input type="checkbox" ng-click="toggleStarsCapEnabled()" ng-model="settings.starsCapEnabled">
+            <span>Limit # of stars to analyze</span>
+          </label>
+          <span class="checkbox" ng-show="settings.starsCapEnabled">
+            to
+          <input class="input-mini numericInput text-center" ng-model="settings.starsCap" type="text" placeholder="500">
+          (makes analysis faster)
+          </span>
+        </form>
+      </div>
       <h4><span class="title-icon icon-pencil"></span> Analysis progress...</h4>
       <ul class="unstyled">
         <li data-ng-repeat="(logName, message) in logEntries">
