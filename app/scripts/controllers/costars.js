@@ -1,14 +1,60 @@
 'use strict';
 
 angular.module('githubStarsApp')
-  .controller('CostarsCtrl', ['$scope', '$routeParams', 'promisingStream', 'githubClient', 'sortedOccurrenceCounter',
-              function ($scope, $routeParams, promisingStream, githubClient, SortedOccurrenceCounter) {
-    $scope.logEntries = {};
-    var log = function (logName, msg) {
-      $scope.logEntries[logName] = msg;
+  .controller('CostarsCtrl', ['$scope', '$routeParams', '$cookies', 'promisingStream', 'githubClient', 'sortedOccurrenceCounter',
+              function ($scope, $routeParams, $cookies, promisingStream, githubClient, SortedOccurrenceCounter) {
+    // TODO: this controller needs to be refactored - it violates SRP and contains more logic
+    // than it should... I'm sorry about this mess, I will refactor this.
+
+    // Analysis configuration:
+    function parseStarsCapLimit(value) {
+      var parsedValue = parseInt(value, 10);
+      if (!isNaN(parsedValue) && parsedValue > 0) {
+        return parsedValue;
+      }
+      return 500; //default
+    }
+    function parseStarsCapEnabled(value) {
+      return value === 'false' ? false : true;
+    }
+
+    var settings = {
+      // # of users to process in parallel. "Process" means getting all their
+      // starred projects from GitHub client:
+      parallelUsersProcessing: 10,
+
+      // How many records of final analysis do we want to show?
+      showResultRecords: 100,
+
+      // analyze only random N stargazers. Makes it faster for popular projects
+      // (thanks to Addy Osmani for the hint)
+      starsCap: parseStarsCapLimit($cookies.starsCap),
+
+      // Do we need to take into account stars cap?
+      starsCapEnabled: parseStarsCapEnabled($cookies.starsCapEnabled),
+
+      // Some browsers may not support our caching store
+      cacheSupported: githubClient.cacheSupported(),
+
+      // User can disable the cache:
+      cacheEnabled: githubClient.cacheEnabled(),
     };
-    var counter = new SortedOccurrenceCounter();
-    window.counter = counter; // this is for debugging/exploratory purposes
+
+    $scope.settings = settings;
+
+    $scope.toggleCacheEnabled = function () {
+      githubClient.setCaching($scope.settings.cacheEnabled);
+    };
+
+    $scope.toggleStarsCapEnabled = function () {
+      $cookies.starsCapEnabled = settings.starsCapEnabled.toString();
+    };
+
+    $scope.$watch('settings.starsCap', function (newValue) {
+      $cookies.starsCap = parseStarsCapLimit(newValue).toString();
+    }, true);
+
+    // utility methods:
     var getRepoName = function (userInput) {
       // we are very forgiving here: allow whitespace, github.com
       // take only user/repo part of the pattern
@@ -20,23 +66,39 @@ angular.module('githubStarsApp')
         return repoMatch[1].toLowerCase();
       }
     };
-    $scope.searchingLabel = 'Type in repository name to start analysis ↑';
 
-    $scope.cacheSupported = githubClient.cacheSupported();
-    $scope.cachingOptions = {
-      enabled: githubClient.cacheEnabled()
+    var shuffleArray = function (array) {
+      var i, j, t;
+      for (i = array.length - 1; i > 0; --i) {
+        j = (Math.random() * (i + 1)) | 0; // i inclusive
+        t = array[j];
+        array[j] = array[i];
+        array[i] = t;
+      }
+
+      return array;
     };
-    $scope.toggleCacheEnabled = function () {
-      githubClient.setCaching($scope.cachingOptions.enabled);
-    };
-    // if we know what to search, let's find it:
+
+    // If we know what to search, let's find it:
     var invariantProjectName = getRepoName($routeParams.q);
     if (!invariantProjectName) {
+      $scope.searchingLabel = 'Type in repository name to start analysis ↑';
       return;
     }
     $scope.searchingLabel = 'Searching for "' + invariantProjectName + '"';
 
-    // TODO: this controller needs to be refactored - it contains more logic than it should...
+    // Projects distance calculation settings/tracking
+    var ourStargazersCount = 0; // number of stargazers who follow our project
+    var analyzedRatio = 1;      // % of our stargazers being analyzed
+    var counter = new SortedOccurrenceCounter(); // Our data model.
+    window.counter = counter;   // Developers are curious. Expose this for their exploration
+
+    // How we find a distance between two projects?
+    var distanceCalculator = function (their, our, shared) {
+      return Math.round(100 * 2 * shared/(analyzedRatio * (their + our)));
+    };
+
+    // Sorting:
     var sortTypes = {
       '#' : 'sharedNumberOfStars',
       '%' : 'sharedPercentOfStars'
@@ -53,23 +115,42 @@ angular.module('githubStarsApp')
       $scope.sortBy = sortTypes[sortType];
       updateSort();
     };
-    var ourStargazersCount = 0;
+
     var updateSort = function () {
       if ($scope.sortBy === 'sharedPercentOfStars') {
         var projects = [];
         // TODO: percent sort is too slow and is not optimized yet.
-        var sorted = counter.customSort(ourStargazersCount, function (their, our, shared) {
-          return Math.round(100 * 2 * shared/(their + our));
-        });
-        for (var i = 0; i < 100; ++i) {
+        var sorted = counter.customSort(ourStargazersCount, distanceCalculator);
+        for (var i = 0; i < settings.showResultRecords; ++i) {
           projects.push(sorted[i]);
         }
         $scope.projects = projects;
       } else {
-        // this is very fast. O(100).
-        $scope.projects = counter.list(100);
+        // this is very fast. O(settings.showResultRecords).
+        $scope.projects = counter.list(settings.showResultRecords);
       }
     };
+
+    //Logging:
+    $scope.logEntries = {};
+    var log = function (logName, msg) {
+      $scope.logEntries[logName] = msg;
+    };
+
+    $scope.userStatus = {};
+    var updateUserAnalysisProgress = function (userName, processedCount, totalRecords) {
+      var record = $scope.userStatus[userName] || { name: userName};
+      record.processedCount = totalRecords ? (processedCount + '/' + totalRecords) : processedCount;
+      $scope.userStatus[userName] = record;
+    };
+    var removeUserAnalysisLogRecord = function (userName) {
+      delete $scope.userStatus[userName];
+    };
+    var updateOverallProgress = function (totalRecords, recordsAnalyzed) {
+      log('followersLog', 'Analyzed ' + recordsAnalyzed + ' out of ' + totalRecords + ' followers' );
+      ourStargazersCount = recordsAnalyzed;
+    };
+
     var updateHistogram = function (foundProjects) {
       for (var i = 0; i < foundProjects.length; ++i) {
         var projectName = foundProjects[i].full_name;
@@ -84,19 +165,7 @@ angular.module('githubStarsApp')
       }
       updateSort();
     };
-    $scope.userStatus = {};
-    var updateUserAnalysisProgress = function (userName, processedCount, totalRecords) {
-      var record = $scope.userStatus[userName] || { name: userName};
-      record.processedCount = totalRecords ? (processedCount + '/' + totalRecords) : processedCount;
-      $scope.userStatus[userName] = record;
-    };
-    var removeUserAnalysisLogRecord = function (userName) {
-      delete $scope.userStatus[userName];
-    };
-    var updateOverallProgress = function (totalRecords, recordsAnalyzed) {
-      log('followersLog', 'Analyzed ' + recordsAnalyzed + ' out of ' + totalRecords + ' followers' );
-      ourStargazersCount = recordsAnalyzed;
-    };
+
     var processStarredProjects = function (followers) {
       var totalRecords = followers.length;
       var usersAnalyzed = 0;
@@ -105,7 +174,7 @@ angular.module('githubStarsApp')
         return function (progressReport) {
           if (progressReport.totalPages && progressReport.totalPages > 12) {
             // This guy has starred more than 1200 projects. Let's ignore him.
-            // Tell github client to stop the process:
+            // Tell github client to stop download remaining pages:
             return true; // TODO: this is cryptic. Consider rejecting the promise?
           }
           processedCount += progressReport.data.length;
@@ -125,6 +194,10 @@ angular.module('githubStarsApp')
         description: true
       };
 
+      // Promising stream takes a burden of keeping at most N non resolved promises
+      // in parallel. As soon as a promise is resolved, the stream uses factroy method
+      // to create and run a new promise. It keeps going until all items in the array
+      // are converted to promises and resolved.
       var discoveryProcess = promisingStream.process(followers, function (follower) {
         var onGetStarredProjectProgressChanged = createProgressUpdateHandler(follower.login);
 
@@ -141,7 +214,8 @@ angular.module('githubStarsApp')
                               updateOverallProgress(totalRecords, ++usersAnalyzed);
                               console.log(reason);
                             });
-      }, 10);
+      }, settings.parallelUsersProcessing);
+
       discoveryProcess.promise.then(function(result){
         console.dir(result);
         log('done', 'Done!');
@@ -151,6 +225,7 @@ angular.module('githubStarsApp')
 
     var discoveryProcess, scopeDestroyed;
     var foundFollowersCount = 0;
+
     githubClient.getStargazers(invariantProjectName, {
       login : true // we need only their login name here...
     }).progress(function (progressReport) {
@@ -162,6 +237,13 @@ angular.module('githubStarsApp')
       $scope.repoTitle = invariantProjectName;
       log('followersLog', 'Found ' + foundFollowers.length + ' followers of ' + invariantProjectName);
       if (!scopeDestroyed) {
+        if (settings.starsCapEnabled && foundFollowers.length > settings.starsCap) {
+          analyzedRatio = settings.starsCap/foundFollowers.length;
+          // The array needs to be random, to avoid "mass stargazing"
+          // effect when project is featured on a news site:
+          foundFollowers = shuffleArray(foundFollowers);
+          foundFollowers.length = settings.starsCap;
+        }
         discoveryProcess = processStarredProjects(foundFollowers);
       }
     }, function () {
