@@ -3,7 +3,7 @@ gazer
 
 This project aims to analyze followers base of a GitHub repository and suggest related projects.
 
-It's kind of experiment of my own curiosity. I wanted to find a mobile UI library for the web. GitHub did not provide this feature, so I developed a simple metric to calculate "distance" between two projects.
+It's kind of experiment of my own curiosity. I wanted to find a mobile UI library for the web. After googling around I found a library, but I wanted to see more related projects. GitHub did not provide this feature, so I developed a simple metric to calculate "distance" between two projects.
 
 ```js
 // Metric 1: Distance between projects A and B.
