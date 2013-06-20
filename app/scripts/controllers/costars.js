@@ -37,7 +37,7 @@ angular.module('githubStarsApp')
       cacheSupported: githubClient.cacheSupported(),
 
       // User can disable the cache:
-      cacheEnabled: githubClient.cacheEnabled(),
+      cacheEnabled: githubClient.cacheEnabled()
     };
 
     $scope.settings = settings;
