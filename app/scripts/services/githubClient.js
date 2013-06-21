@@ -108,10 +108,20 @@ angular.module('githubStarsApp')
         getAllPages = function (handler, shrinkPattern) {
           var download = progressingPromise.defer();
           // forward declaration of functional expressions
-          var reportProgressAndDownloadNextPage, getOnePage;
+          var downloadRemainingPages, getFirstPage;
 
           var result = [];
-          reportProgressAndDownloadNextPage = function(res) {
+          var savePageResult = function (res) {
+            var savedPageData = [];
+            var shrinkedObj;
+            for (var i = 0; i < res.data.length; ++i) {
+              shrinkedObj = shrinker(res.data[i], shrinkPattern);
+              savedPageData.push(shrinkedObj);
+              result.push(shrinkedObj);
+            }
+            return savedPageData;
+          };
+          downloadRemainingPages = function(res) {
             var data = res && res.data;
             if (!angular.isArray(data)) {
               download.reject(data); // something goes wrong. Missing repository?
@@ -120,41 +130,62 @@ angular.module('githubStarsApp')
             var metaLink = res.meta && res.meta.Link;
             var next = getRelPage(metaLink, 'next'),
                 total = getRelPage(metaLink, 'last');
-            var progressData = [];
-            var shrinkedObj;
-            for (var i = 0; i < res.data.length; ++i) {
-              shrinkedObj = shrinker(res.data[i], shrinkPattern);
-              progressData.push(shrinkedObj);
-              result.push(shrinkedObj);
-            }
+            var pageData = savePageResult(res);
 
             var stopNow = download.reportProgress({
               nextPage: next,
               totalPages: total,
               perPage: 100,
-              data: progressData
+              data: pageData
             });
             if (stopNow) {
-              download.reject('Requested to stop');
-            } else if (next) {
-              getOnePage(next);
+              download.reject('Record contains too many pages. Ignoring request.');
+            } else if (next && total) {
+              // client has approved download of all remaining pages. Let's schedule them all
+              var remainingPageDownloadPromise = [];
+              var remainedCount = total - next;
+              for (var i = next; i <= total; ++i) {
+                remainingPageDownloadPromise.push(
+                  makeRequest(handler, {
+                    per_page: 100,
+                    page: i
+                  }).then(function (res) {
+                    var pageData = savePageResult(res);
+                    remainedCount -= 1;
+                    download.reportProgress({
+                      nextPage: total - remainedCount,
+                      totalPages: total,
+                      perPage: 100,
+                      data: pageData
+                    });
+                  })
+                );
+              }
+              $q.all(remainingPageDownloadPromise).then(
+                function () {
+                  download.resolve(result);
+                },
+                function (reason) {
+                  download.reject(reason);
+                }
+              );
             } else {
               download.resolve(result);
             }
           };
 
-          getOnePage = function(pageNumber) {
+          getFirstPage = function() {
             makeRequest(handler, {
                 per_page: 100,
-                page: pageNumber
-              }).then(reportProgressAndDownloadNextPage, function (err) {
+                page: 1
+              }).then(downloadRemainingPages, function (err) {
                 // if something goes wrong here, lets reject the entire process
                 download.reject(err);
               });
           };
 
           // kick of pages download
-          getOnePage(1);
+          getFirstPage();
 
           return download.promise;
         };
