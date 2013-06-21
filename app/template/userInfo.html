@@ -6,7 +6,7 @@
   </div>
   <div class="rate-limit ng-cloak" data-ng-Show="isAuthenticated">
     <span>Rate limit: {{requestsRemained}}</span>
-    <a href="/anvaka" class="name">
+    <a data-ng-href="https://github.com/{{user.login}}" class="name">
       <img height="20" data-ng-Src="{{user.avatar_url}}" width="20"></img> {{user.login}}
     </a>
   </div>
