@@ -34,6 +34,7 @@ angular.module('githubStarsApp')
       starsCapEnabled: parseStarsCapEnabled($cookies.starsCapEnabled),
 
       // Maximum number of starred repositores pages to download per user
+      // Based on analysis of 20K users, 80% of them had less than 6 pages of likes
       maxStarredPagesPerUser: 6,
 
       // Some browsers may not support our caching store
