@@ -33,6 +33,9 @@ angular.module('githubStarsApp')
       // Do we need to take into account stars cap?
       starsCapEnabled: parseStarsCapEnabled($cookies.starsCapEnabled),
 
+      // Maximum number of starred repositores pages to download per user
+      maxStarredPagesPerUser: 6,
+
       // Some browsers may not support our caching store
       cacheSupported: githubClient.cacheSupported(),
 
@@ -172,8 +175,8 @@ angular.module('githubStarsApp')
       var createProgressUpdateHandler = function (userName) {
         var processedCount = 0;
         return function (progressReport) {
-          if (progressReport.totalPages && progressReport.totalPages > 12) {
-            // This guy has starred more than 1200 projects. Let's ignore him.
+          if (progressReport.totalPages && progressReport.totalPages > settings.maxStarredPagesPerUser) {
+            // This guy has starred too many projects. Let's ignore him.
             // Tell github client to stop download remaining pages:
             return true; // TODO: this is cryptic. Consider rejecting the promise?
           }
