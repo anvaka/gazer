@@ -144,21 +144,24 @@ angular.module('githubStarsApp')
               // client has approved download of all remaining pages. Let's schedule them all
               var remainingPageDownloadPromise = [];
               var remainedCount = total - next;
+              var createPageDataSaver = function () {
+                return function (res) {
+                  var pageData = savePageResult(res);
+                  remainedCount -= 1;
+                  download.reportProgress({
+                    nextPage: total - remainedCount,
+                    totalPages: total,
+                    perPage: 100,
+                    data: pageData
+                  });
+                };
+              };
               for (var i = next; i <= total; ++i) {
                 remainingPageDownloadPromise.push(
                   makeRequest(handler, {
                     per_page: 100,
                     page: i
-                  }).then(function (res) {
-                    var pageData = savePageResult(res);
-                    remainedCount -= 1;
-                    download.reportProgress({
-                      nextPage: total - remainedCount,
-                      totalPages: total,
-                      perPage: 100,
-                      data: pageData
-                    });
-                  })
+                  }).then(createPageDataSaver())
                 );
               }
               $q.all(remainingPageDownloadPromise).then(
