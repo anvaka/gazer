@@ -91,14 +91,17 @@ angular.module('githubStarsApp')
     }
     $scope.searchingLabel = 'Searching for "' + invariantProjectName + '"';
 
-    // Projects distance calculation settings/tracking
+    // Projects similarity calculation settings/tracking
     var ourStargazersCount = 0; // number of stargazers who follow our project
     var analyzedRatio = 1;      // % of our stargazers being analyzed
     var counter = new SortedOccurrenceCounter(); // Our data model.
     window.counter = counter;   // Developers are curious. Expose this for their exploration
 
-    // How we find a distance between two projects?
-    var distanceCalculator = function (their, our, shared) {
+    // How we find a similarity between two projects?
+    var similarityCalculator = function (their, our, shared) {
+      // apprently this formula represents a generalization of Jaccard index 
+      // (http://en.wikipedia.org/wiki/Jaccard_index)
+      // Thanks to Cameron Davidson-Pilon for pointing out
       return Math.round(100 * 2 * shared/(analyzedRatio * (their + our)));
     };
 
@@ -124,7 +127,7 @@ angular.module('githubStarsApp')
       if ($scope.sortBy === 'sharedPercentOfStars') {
         var projects = [];
         // TODO: percent sort is too slow and is not optimized yet.
-        var sorted = counter.customSort(ourStargazersCount, distanceCalculator);
+        var sorted = counter.customSort(ourStargazersCount, similarityCalculator);
         for (var i = 0; i < settings.showResultRecords; ++i) {
           projects.push(sorted[i]);
         }

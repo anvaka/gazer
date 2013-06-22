@@ -38,7 +38,7 @@
         <ul class="inline">
           <li>Sort by: </li>
           <li><a class='sort-by' ng-class="classForSort('#')" ng-click="changeSort('#')"><span title="Sort in descending order of shared number of stars between two projects">Shared # of stars</span></a><li>
-          <li><a class='sort-by' ng-class="classForSort('%')" ng-click="changeSort('%')"><span title="Sort in descending order of shared percentage of likes between two projects: sharedStars/(projectAStars + projectBStars)">Shared % of stars</span></a><li>
+          <li><a class='sort-by' ng-class="classForSort('%')" ng-click="changeSort('%')"><span title="Sort in descending order of similarity coefficient of two projects: sharedStars/(projectAStars + projectBStars)">Similarity coefficient</span></a><li>
         </ul>
       <table class="table table-striped  table-condensed">
         <tbody>
