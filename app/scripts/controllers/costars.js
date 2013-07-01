@@ -265,7 +265,7 @@ angular.module('githubStarsApp')
           discoveryProcess = processStarredProjects(foundFollowers);
         }
       }, function () {
-        $scope.searchingLabel = 'Sorry, I couldn\'t find this reposiotry on GitHub.com. Make sure it exists.';
+        $scope.searchingLabel = 'Sorry, I couldn\'t find this repository on GitHub.com. Make sure it exists.';
       });
 
       $scope.$on('$destroy', function () {
