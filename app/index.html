@@ -23,7 +23,7 @@
     <![endif]-->
 
   <!-- Add your site or application content here -->
-  <div class="navbar">
+  <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
       <a class="brand" href="#">Yasiv - GitHub</a>
       <form class="navbar-search pull-left" data-ng-controller="SearchCtrl" data-ng-submit="search()">
@@ -48,7 +48,7 @@
       </ul>
     </div>
   </div>
-  <div class="container" data-ng-view></div>
+  <div class="container main-content" data-ng-view></div>
 
   <script src="components/angular/angular.js"></script>
   <script src="components/angular-resource/angular-resource.js"></script>
@@ -71,6 +71,7 @@
   <script src="scripts/services/promisingStream.js"></script>
   <script src="scripts/services/cacheService.js"></script>
   <script src="scripts/directives/numericInput.js"></script>
+  <script src="scripts/services/precalculator.js"></script>
   <!-- endbuild -->
 
   <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->

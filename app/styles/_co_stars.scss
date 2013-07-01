@@ -1,6 +1,7 @@
 
 .anonymous-rate-limit, .rate-limit {
-  padding-top: 9px;
+  padding-top: 11px;
+  padding-right: 11px;
 }
 
 .title-icon {
@@ -14,4 +15,10 @@
 }
 .sort-by.current {
   font-weight: bold;
+}
+.main-content {
+  padding-top: 50px;
+}
+.navbar .brand {
+  margin-left: -11px;
 }
