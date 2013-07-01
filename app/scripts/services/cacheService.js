@@ -47,10 +47,14 @@ angular.module('githubStarsApp')
 .factory('indexedDB', ['$q', '$timeout','$rootScope', function ($q, $timeout, $rootScope) {
 
   var isSupported = (function polyfillIDB(){
-    if (!window.hasOwnProperty('indexedDB')) {
-      window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+    try {
+      if (!('indexedDB' in window.hasOwnProperty)) {
+        window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+      }
+      return !!window.indexedDB;
+    } catch (e) {
+      return false;
     }
-    return !!window.indexedDB;
   })();
   var checkSupported = function (dbSettings) {
     var defer = $q.defer();
