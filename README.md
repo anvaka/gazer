@@ -3,11 +3,11 @@ gazer
 
 This project aims to analyze followers base of a GitHub repository and suggest related projects.
 
-It's kind of experiment of my own curiosity. I wanted to find a mobile UI library for the web. After googling around I found a library, but I wanted to see more related projects. GitHub did not provide this feature, so I developed a simple metric to calculate "distance" between two projects.
+It's kind of experiment of my own curiosity. I wanted to find a mobile UI library for the web. After googling around I found a library, but I wanted to see more related projects. GitHub did not provide this feature, so I developed a simple metric to calculate similarity of two projects.
 
 ```js
-// Metric 1: Distance between projects A and B.
-distance = 2 * sharedStarsCount(A, B)/(numberOfStars(A) + numberOfStars(B));
+// Metric 1: Similarity measure of two projects A and B.
+similarity = 2 * sharedStarsCount(A, B)/(numberOfStars(A) + numberOfStars(B));
 ```
 
 While this is very naive formula, in practice it gives interesting results. For example, among top related projects for my graph drawing library  [vivagraph.js](https://github.com/anvaka/VivaGraphJS) (650 stars):
@@ -21,9 +21,9 @@ While this is very naive formula, in practice it gives interesting results. For 
 For popular projects, with more than 2-3k stars, the metric [1] can be polluted by other popular projects (like Backbone, or Bootstrap): We, developers, all tend to like beautiful code. Surprisingly, the amount of "popular noise" can be significantly reduced by analyzing limited subset of random stargazers. Metric [1] can be rewritten as
 
 ```js
-// Metric 2: Distance between popular project A and project B
+// Metric 2: Similarity measure of two popular projects A and B
 weight = randomSubsetSize/numberOfStars(A);
-distance = 2 * sharedStarsCount(A, B)/(weight * (numberOfStars(A) + numberOfStars(B)));
+similarity 2 * sharedStarsCount(A, B)/(weight * (randomSubsetSize + numberOfStars(B)));
 ```
 
 Here is an example of [angular.js](https://github.com/angular/angular.js) (11K followers) analysis on random subset of 500 followers:
@@ -36,11 +36,11 @@ Here is an example of [angular.js](https://github.com/angular/angular.js) (11K f
 
 Try it yourself
 --------------------
-Hosted version of the app is available here: http://www.yasiv.com/github/#/ Make sure to sort by "Shared % of stars" when application completes gathering information.
+Hosted version of the app is available here: http://www.yasiv.com/github/#/ It already knows about approximately 8,000 popular projects. If your project has more than 200 stars, most likely you will get suggestions immediately. Otherwise the site will build similarities in the realtime. Make sure to sort by "Similarity coefficient" when application completes gathering information.
 
 Caveats
 ------------
-* Github does not have a bulk API, which makes processing of popular projects extremely time consuming. In practice, this can be mitigated by limiting amount of stars analyzed (see metric [2]).
+* Github does not have a bulk API, which makes processing of popular projects extremely time consuming. It could be mitigated by serving precomputed suggestions. If suggestions are not available, the time can further be reduced by limiting amount of stars to analyze (see metric [2]).
 * Number of requests to GitHub API is rate limited (60 per hour). Sign in to the application with OAuth to increase rate limit up to 5,000 requests per hour.
 * Analyzing randomized subset may produce different ranking and pick different projects as the best match. But you will notice the same projects are being picked between multiple runs of the algorithm. Pay attention to those.
 * The algorithm will not work for projects with small amount of stars. I'm still not sure what is the lower bound here (100 stars?). For projects with 500+ stars quite often results are interesting.
