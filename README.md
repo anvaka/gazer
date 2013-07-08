@@ -1,8 +1,14 @@
 gazer
 =====
 
-This project aims to analyze followers base of a GitHub repository and suggest related projects.
+This project aims to analyze followers base of a GitHub repository and suggest related projects. It is using information about shared number of stars to calculate similarity index between two projects.
 
+Try it yourself
+--------------------
+Hosted version of the app is available here: http://www.yasiv.com/github/#/ It already knows about approximately 8,000 popular projects. If your project had more than 200 stars on Jul 1st, most likely you will get suggestions immediately. Otherwise the site will build similarities in the realtime. Make sure to sort by "Similarity coefficient" when application completes gathering information.
+
+Hows and Whys
+-------------
 It's kind of experiment of my own curiosity. I wanted to find a mobile UI library for the web. After googling around I found a library, but I wanted to see more related projects. GitHub did not provide this feature, so I developed a simple metric to calculate similarity of two projects.
 
 ```js
@@ -33,10 +39,6 @@ Here is an example of [angular.js](https://github.com/angular/angular.js) (11K f
 * [jmcunningham/AngularJS-Learning](https://github.com/jmcunningham/AngularJS-Learning) - A bunch of links to blog posts, articles, videos, etc for learning AngularJS (2,465 stars)
 * [angular-ui/bootstrap](https://github.com/angular-ui/bootstrap) - Native AngularJS (Angular) directives for Twitter's Bootstrap. Small footprint (5kB gzipped!), no 3rd party JS dependencies (jQuery, bootstrap JS) required! (1,320 stars)
 * [mgcrea/angular-strap](https://github.com/mgcrea/angular-strap) - Bootstrap directives for Angular (1,177 stars) 
-
-Try it yourself
---------------------
-Hosted version of the app is available here: http://www.yasiv.com/github/#/ It already knows about approximately 8,000 popular projects. If your project has more than 200 stars, most likely you will get suggestions immediately. Otherwise the site will build similarities in the realtime. Make sure to sort by "Similarity coefficient" when application completes gathering information.
 
 Caveats
 ------------
