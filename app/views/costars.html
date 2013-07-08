@@ -44,16 +44,19 @@
         <tbody>
           <tr class="row-fluid" data-ng-repeat="project in projects">
             <td>
-              <div class="span9">
-                <a data-ng-href="https://github.com/{{project.key}}" target="_blank">{{project.key}}</a>: <b>x{{project.count}}</b>
-                <span ng-show='project.rate'> Rate: {{project.rate | number}}</span>
+              <div class="span8">
+                <a data-ng-href="https://github.com/{{project.key}}" target="_blank">{{project.key}}</a>
                 <br />
+                <p data-ng-bind="project.value.description"></p>
               </div>
-              <small class="span3">
-                <i class="icon-star"></i><span data-ng-bind="project.value.watchers_count | number"></span>&nbsp;&nbsp;
-                <i class="icon-code-fork"></i><span data-ng-bind="project.value.forks_count | number"></span>
+              <small class="span4">
+                <i title="Watchers count" class="icon-star"></i><span data-ng-bind="project.value.watchers_count | number"></span>&nbsp;&nbsp;
+                <i title="Forks count" class="icon-code-fork"></i><span data-ng-bind="project.value.forks_count | number"></span>&nbsp;&nbsp;
+                <i title="Shared watchers count" class="icon-star-half-empty"></i><span data-ng-bind="project.count | number"></span>&nbsp;&nbsp;
+                <span ng-show='project.rate'>
+                  <i title="Similarity coefficient (weighted Sørensen–Dice index)" class="icon-dashboard"></i>&nbsp;<span ng-show='project.rate'>Rate: {{project.rate | number}}</span>
+                </span>
               </small>
-              <p data-ng-bind="project.value.description"></p>
             </td>
           </tr>
         </tbody>
@@ -81,6 +84,9 @@
             <i class="icon-star"></i><span data-ng-bind="project.watchers | number"></span>&nbsp;&nbsp;
             <i class="icon-code-fork"></i><span data-ng-bind="project.forks | number"></span>&nbsp;&nbsp;
             <i class="icon-dashboard"></i>&nbsp;<span ng-show='project.rate'>Rate: {{project.rate | number}}</span>
+          <p>
+            <a ng-href="#/costars?q={{project.name}}">Find related</a>
+          </p>
           </small>
         </td>
       </tr>
