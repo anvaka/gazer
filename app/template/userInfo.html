@@ -1,13 +1,20 @@
 <div>
-  <div class="anonymous-rate-limit ng-cloak" data-ng-Hide="isAuthenticated">
-    <span class="sign-in-info text-error">You are not signed in to GitHub. GitHub reduces amount of available requests.</span>
-    <span>Rate limit: {{requestsRemained}}</span>
-    <strong><a ng-Href="https://github.com/login/oauth/authorize?client_id={{clientId}}">Sign in</a></strong>
-  </div>
-  <div class="rate-limit ng-cloak" data-ng-Show="isAuthenticated">
-    <span>Rate limit: {{requestsRemained}}</span>
-    <a data-ng-href="https://github.com/{{user.login}}" class="name">
+  <div class="rate-limit ng-cloak">
+    <a data-ng-Show="isAuthenticated" data-ng-href="https://github.com/{{user.login}}" class="name">
       <img height="20" data-ng-Src="{{user.avatar_url}}" width="20"></img> {{user.login}}
     </a>
+    <strong data-ng-Hide="isAuthenticated"><a ng-Href="https://github.com/login/oauth/authorize?client_id={{clientId}}">Sign in</a></strong>
   </div>
+</div>
+
+<div class="rateLimitInfo" style="
+    position: absolute;
+    top: 50px;
+    width:220px;
+">
+  <span data-ng-Hide="isAuthenticated">
+    <i class="icon-exclamation-sign sign-in-info text-error" title="You are not signed in to GitHub. GitHub reduces amount of available requests."></i>
+  </span>
+  <span>GitHub API rate limit: {{requestsRemained}}</span>
+  <span data-ng-Hide="isAuthenticated" class=""></span>
 </div>

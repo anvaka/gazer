@@ -34,8 +34,8 @@
               <b class="caret"></b>
             </a>
             <ul class="dropdown-menu">
-              <li data-ng-repeat="search in searches">
-              {{search.name}}
+              <li data-ng-bind="search.name" data-ng-repeat="search in searches">
+              <span data-ng-bind="search.name"></span>
               </li>
             </ul>
           </div>
@@ -43,13 +43,20 @@
           <button type="submit" class="btn btn-primary">Go</button>
         </div>
       </form>
-      <ul class="nav pull-right" data-ng-controller='UserInfoCtrl'>
-        <li class="userInfo">Sign in</li>
-      </ul>
+      <div class="share pull-right">
+        <ul class="nav">
+          <li><a class="brand" target="_blank" href="https://github.com/anvaka/gazer/"><i class="icon-github"></i></a></li>
+          <li><a class="brand" target="_blank" href="https://twitter.com/intent/tweet?original_referer=http%3A%2F%2Fwww.yasiv.com%2Fgithub%2F%23%2F&text=Find%20projects%20that%20are%20like%20a%20given%20github%20repo%3A%20github%20gazer&tw_p=tweetbutton&url=http%3A%2F%2Fwww.yasiv.com%2Fgithub%2F%23%2F"><i class="icon-twitter"></i></a></li>
+          <li><a class="brand" target="_blank" href="https://plus.google.com/share?url=http%3A%2F%2Fwww.yasiv.com%2Fgithub%2F%23%2F"><i class="icon-google-plus"></i></a></li>
+          <li><a class="brand" href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fwww.yasiv.com%2Fgithub%2F%23%2F"><i class="icon-facebook"></i></a></li>
+        </ul>
+      </div>
+    <ul class="nav pull-right" data-ng-controller='UserInfoCtrl'>
+      <li class="userInfo">Sign in</li>
+    </ul>
     </div>
   </div>
   <div class="container main-content" data-ng-view></div>
-  <a href="https://github.com/anvaka/gazer" target="_blank"><img style="position: absolute; top: 45px; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
   <script src="components/angular/angular.js"></script>
   <script src="components/angular-resource/angular-resource.js"></script>
   <script src="components/angular-cookies/angular-cookies.js"></script>
