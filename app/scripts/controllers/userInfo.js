@@ -11,7 +11,7 @@ angular.module('githubStarsApp')
     $scope.$on('github:rateLimitChanged', function (e, rate) {
       $scope.requestsRemained = rate.remaining + '/' + rate.limit;
     });
-    $scope.clientId = config.clientId;
 
+    $scope.clientId = config.clientId;
     $scope.requestsRemained = 10;
   }]);

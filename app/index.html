@@ -2,7 +2,7 @@
 <!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
 <!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
 <!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" ng-app="githubStarsApp"> <!--<![endif]-->
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -12,7 +12,7 @@
   <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
   <link rel="stylesheet" href="styles/main.css">
 </head>
-<body data-ng-app="githubStarsApp">
+<body >
   <!--[if lt IE 7]>
       <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
     <![endif]-->
@@ -26,7 +26,7 @@
   <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
       <a class="brand" href="#">Yasiv - GitHub</a>
-      <form class="navbar-search pull-left" data-ng-controller="SearchCtrl" data-ng-submit="search()">
+      <form class="navbar-search pull-left" ng-controller="SearchCtrl" ng-submit="search()">
         <div class="input-prepend input-append">
           <div class="add-on dropdown" >
             <a href="#" data-role="button" class="dropdown-toggle ng-cloak">
@@ -39,7 +39,7 @@
               </li>
             </ul>
           </div>
-          <input type="text" class="search-query" data-ng-model="searchText" placeholder="{{currentSearch.help}}"/>
+          <input type="text" class="search-query" ng-model="searchText" typeahead="repo for repo in repositoriesLike($viewValue)" placeholder="Find related repositories"/>
           <button type="submit" class="btn btn-primary">Go</button>
         </div>
       </form>
@@ -58,11 +58,11 @@
   </div>
   <div class="container main-content" data-ng-view></div>
   <script src="components/angular/angular.js"></script>
+  <script src="components/angular-route//angular-route.js"></script>
   <script src="components/angular-resource/angular-resource.js"></script>
   <script src="components/angular-cookies/angular-cookies.js"></script>
   <script src="components/angular-sanitize/angular-sanitize.js"></script>
-  <script src="components/angular-bootstrap/ui-bootstrap.js"></script>
-
+  <script src="components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
   <!-- build:js scripts/scripts.js -->
   <script src="scripts/app.js"></script>
   <script src="scripts/controllers/main.js"></script>
