@@ -4,8 +4,8 @@ angular.module('githubStarsApp', [
   'ngCookies',
   'ngRoute',
   'githubStarsApp.directives',
-  'githubStarsApp.directives.numericInput'])
-  .config(['$routeProvider', '$locationProvider', function ($routeProvider) {
+  'githubStarsApp.directives.numericInput'
+]).config(['$routeProvider', '$locationProvider', function ($routeProvider) {
     $routeProvider.when('/', {
         templateUrl: 'views/main.html',
         controller: 'MainCtrl'

@@ -8,6 +8,7 @@ files = [
   JASMINE,
   JASMINE_ADAPTER,
   'app/components/angular/angular.js',
+  'app/components/angular-route/angular-route.js',
   'app/components/angular-mocks/angular-mocks.js',
   'app/components/angular-bootstrap/ui-bootstrap-tpls.js',
   'app/components/angular-cookies/angular-cookies.js',

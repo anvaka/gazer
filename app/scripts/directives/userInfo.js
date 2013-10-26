@@ -11,12 +11,11 @@ app.directive('userInfo', function () {
 }).directive('defaultFocus', ['$timeout', function($timeout) {
   return {
     restrict:'C',
-    link: function (scope, element, attrs, model) {
+    link: function (scope, element) {
       $timeout(function () {
-        debugger;
         element[0].focus();
       });
     }
   };
-}])
+}]);
 
