@@ -28,18 +28,7 @@
       <a class="brand" href="#">Yasiv - GitHub</a>
       <form class="navbar-search pull-left" ng-controller="SearchCtrl" ng-submit="search()">
         <div class="input-prepend input-append">
-          <div class="add-on dropdown" >
-            <a href="#" data-role="button" class="dropdown-toggle ng-cloak">
-              {{currentSearch.name}}
-              <b class="caret"></b>
-            </a>
-            <ul class="dropdown-menu">
-              <li data-ng-bind="search.name" data-ng-repeat="search in searches">
-              <span data-ng-bind="search.name"></span>
-              </li>
-            </ul>
-          </div>
-          <input type="text" class="search-query" ng-model="searchText" typeahead="repo for repo in repositoriesLike($viewValue)" placeholder="Find related repositories"/>
+          <input type="text" class="search-query defaultFocus" ng-model="searchText" typeahead="repo for repo in repositoriesLike($viewValue)" placeholder="Find related repositories"/>
           <button type="submit" class="btn btn-primary">Go</button>
         </div>
       </form>

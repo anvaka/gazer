@@ -8,4 +8,15 @@ app.directive('userInfo', function () {
     link: function() {
     }
   };
-});
+}).directive('defaultFocus', ['$timeout', function($timeout) {
+  return {
+    restrict:'C',
+    link: function (scope, element, attrs, model) {
+      $timeout(function () {
+        debugger;
+        element[0].focus();
+      });
+    }
+  };
+}])
+
