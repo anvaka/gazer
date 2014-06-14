@@ -5,7 +5,9 @@ This project aims to analyze followers base of a GitHub repository and suggest r
 
 Try it yourself
 --------------------
-Hosted version of the app is available here: http://www.yasiv.com/github/#/ It already knows about [9,902 popular projects](http://s3.amazonaws.com/github_yasiv/projects/projects.json). If your project had more than 200 stars on Dec 1st, most likely you will get suggestions immediately. Otherwise the site will build similarities in the real time. Make sure to sort by "Similarity coefficient" when application completes gathering information.
+Hosted version of the app is available here: http://www.yasiv.com/github/#/ It already knows about [12,998 popular projects](http://s3.amazonaws.com/github_yasiv/projects/projects.json). If your project had more than 200 stars on Jun 11th, 2014 most likely you will get suggestions immediately. Otherwise the site will build similarities in the real time. Make sure to sort by "Similarity coefficient" when application completes gathering information.
+
+Offline index is produced by [ghindex](https://github.com/anvaka/ghindex)
 
 Hows and Whys
 -------------
