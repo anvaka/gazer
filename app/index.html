@@ -28,8 +28,8 @@
       <a class="brand" href="#">Yasiv - GitHub</a>
       <form class="navbar-search pull-left" ng-controller="SearchCtrl" ng-submit="search()">
         <div class="input-prepend input-append">
-          <input type="text" class="search-query defaultFocus" ng-model="searchText" typeahead="repo for repo in repositoriesLike($viewValue)" placeholder="Find related repositories"/>
-          <button type="submit" class="btn btn-primary">Go</button>
+          <input type="text" class="search-query defaultFocus" ng-model="searchText" typeahead="repo for repo in repositoriesLike($viewValue)" placeholder="E.g. andreis/interview"/>
+          <button type="submit" class="btn btn-primary">Find related</button>
         </div>
       </form>
       <div class="share pull-right">

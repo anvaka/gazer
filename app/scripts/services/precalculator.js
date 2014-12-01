@@ -12,7 +12,6 @@ angular.module('githubStarsApp')
               return {
                 name : r.n,
                 description: r.d,
-                forks: r.f,
                 watchers: r.w,
                 rate: r.r,
                 place: idx + 1
