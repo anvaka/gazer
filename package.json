@@ -1,6 +1,9 @@
 {
   "name": "github-stars",
   "version": "0.0.0",
+  "scripts": {
+    "start": "grunt server"
+  },
   "dependencies": {},
   "devDependencies": {
     "grunt": "~0.4.1",
