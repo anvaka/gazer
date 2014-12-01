@@ -14,10 +14,11 @@ angular.module('githubStarsApp')
     $scope.repositoriesLike = function(name) {
       // slow but clean way to find all matches with correct priority on
       // user name first, then repository name:
+      name = name.toLowerCase();
       return knownRepositories.filter(function(x) {
-        return x.indexOf(name) !== -1;
+        return x.toLowerCase().indexOf(name) !== -1;
       }).sort(function(x, y) {
-        return x.indexOf(name) - y.indexOf(name);
+        return x.toLowerCase().indexOf(name) - y.toLowerCase().indexOf(name);
       }).splice(0, 12);
     };
 
